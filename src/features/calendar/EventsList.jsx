@@ -17,13 +17,13 @@ function EventsList({ events, canManage, onEdit, onDelete, onSelect }) {
         </thead>
         <tbody>
           {events.map((event) => (
-            <tr key={event.id}>
-              <td><strong>{formatShortDate(event.startDate)}</strong><small>{event.allDay ? 'Cały dzień' : `${event.startTime}–${event.endTime}`}</small></td>
-              <td><button className="event-title-button" type="button" onClick={() => onSelect(event)}>{event.title}</button><small>{event.location}</small></td>
-              <td><CategoryBadge category={event.category} /></td>
-              <td>{event.audience}</td>
+            <tr className={canManage ? 'events-table-row--manageable' : undefined} key={event.id}>
+              <td className="events-table__date"><strong>{formatShortDate(event.startDate)}</strong><small>{event.allDay ? 'Cały dzień' : `${event.startTime}–${event.endTime}`}</small></td>
+              <td className="events-table__title"><button className="event-title-button" type="button" onClick={() => onSelect(event)}>{event.title}</button><small>{event.location}</small></td>
+              <td className="events-table__category"><CategoryBadge category={event.category} /></td>
+              <td className="events-table__audience">{event.audience}</td>
               {canManage && (
-                <td>
+                <td className="events-table__actions">
                   <div className="table-actions d-flex gap-1">
                     <button className="btn btn-outline-secondary btn-sm icon-button" type="button" aria-label={`Edytuj: ${event.title}`} onClick={() => onEdit(event)}><FiEdit2 /></button>
                     <button className="btn btn-outline-danger btn-sm icon-button" type="button" aria-label={`Usuń: ${event.title}`} onClick={() => onDelete(event)}><FiTrash2 /></button>

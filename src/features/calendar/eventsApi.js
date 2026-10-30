@@ -139,6 +139,41 @@ export async function saveEvent(event, { profile, schoolYear, categories, audien
   if (error) throw error
 }
 
+export async function saveEvents(events, { profile, schoolYear, categories, audiences }) {
+  if (!events.length) return
+
+  const client = requireSupabase()
+  const values = events.map((event) => {
+    const category = categories.find((item) => item.name === event.category)
+    const audience = audiences.find((item) => item.name === event.audience)
+
+    if (!category || !audience) {
+      throw new Error(`Nie można zapisać wydarzenia „${event.title}”: wybierz kategorię i odbiorców z listy.`)
+    }
+
+    return {
+      school_id: profile.schoolId,
+      school_year_id: schoolYear.id,
+      title: event.title,
+      description: event.description || '',
+      category_id: category.id,
+      audience_id: audience.id,
+      start_date: event.startDate,
+      end_date: event.endDate,
+      start_time: event.allDay ? null : event.startTime,
+      end_time: event.allDay ? null : event.endTime,
+      all_day: event.allDay,
+      location: event.location,
+      organizer: event.organizer || '',
+      created_by: profile.id,
+      updated_by: profile.id,
+    }
+  })
+
+  const { error } = await client.from('events').insert(values)
+  if (error) throw error
+}
+
 export async function deleteEvent(eventId) {
   const client = requireSupabase()
   const { data, error } = await client

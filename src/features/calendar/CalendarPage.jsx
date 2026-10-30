@@ -8,6 +8,7 @@ import {
   FiPlus,
   FiSearch,
   FiTrash2,
+  FiUpload,
 } from 'react-icons/fi'
 import AppLayout from '../../shared/layouts/AppLayout.jsx'
 import {
@@ -22,6 +23,7 @@ import DeleteEventDialog from './DeleteEventDialog.jsx'
 import EventForm, { CategoryBadge } from './EventForm.jsx'
 import EventsList from './EventsList.jsx'
 import AuthPanel from './AuthPanel.jsx'
+import ImportEventsDialog from './ImportEventsDialog.jsx'
 import {
   deleteEvent as deleteEventRecord,
   fetchEvents,
@@ -29,6 +31,7 @@ import {
   fetchSchoolYear,
   fetchTaxonomy,
   saveEvent as saveEventRecord,
+  saveEvents as saveEventsRecord,
   signOut,
 } from './eventsApi.js'
 import { isSupabaseConfigured, supabase } from '../../shared/lib/supabase.js'
@@ -50,6 +53,7 @@ function CalendarPage() {
   const [previousPage, setPreviousPage] = useState('calendar')
   const [editingEvent, setEditingEvent] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [showImport, setShowImport] = useState(false)
   const [today, setToday] = useState(() => getWarsawToday())
   const [selectedDate, setSelectedDate] = useState(() => getWarsawToday())
   const [currentMonth, setCurrentMonth] = useState(() => {
@@ -212,6 +216,19 @@ function CalendarPage() {
       setPage(previousPage)
     } catch (error) {
       setMutationError(error.message || 'Nie udało się zapisać wydarzenia.')
+    } finally {
+      setMutationBusy(false)
+    }
+  }
+
+  async function importEvents(importedEvents) {
+    if (!canManage || !profile || !schoolYear) return
+    setMutationBusy(true)
+    try {
+      await saveEventsRecord(importedEvents, { profile, schoolYear, ...taxonomy })
+      await reloadEvents()
+      selectDate(importedEvents[0].startDate)
+      setShowImport(false)
     } finally {
       setMutationBusy(false)
     }
@@ -382,9 +399,14 @@ function CalendarPage() {
                 </button>
               </div>
               {canManage && (
-                <button className="btn btn-success page-add-button" type="button" onClick={startCreate}>
-                  <FiPlus /> Dodaj wydarzenie
-                </button>
+                <>
+                  <button className="btn btn-outline-secondary page-add-button" type="button" onClick={() => setShowImport(true)}>
+                    <FiUpload /> Importuj plik
+                  </button>
+                  <button className="btn btn-success page-add-button" type="button" onClick={startCreate}>
+                    <FiPlus /> Dodaj wydarzenie
+                  </button>
+                </>
               )}
               </div>
             </div>
@@ -437,6 +459,16 @@ function CalendarPage() {
           busy={mutationBusy}
           onCancel={() => { if (!mutationBusy) setDeleteTarget(null) }}
           onConfirm={confirmDelete}
+        />
+      )}
+      {showImport && canManage && (
+        <ImportEventsDialog
+          categories={taxonomy.categories}
+          audiences={taxonomy.audiences}
+          schoolYear={schoolYear}
+          busy={mutationBusy}
+          onClose={() => setShowImport(false)}
+          onImport={importEvents}
         />
       )}
     </AppLayout>
