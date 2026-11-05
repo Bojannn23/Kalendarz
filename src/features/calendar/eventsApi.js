@@ -78,7 +78,7 @@ export async function fetchEvents(schoolYearId) {
     .select(`
       id, title, description, start_date, end_date, start_time, end_time,
       all_day, location, organizer, category_id, audience_id,
-      categories(name, slug), audiences(name)
+      is_private, created_by, categories(name, slug), audiences(name)
     `)
     .eq('school_year_id', schoolYearId)
     .order('start_date')
@@ -102,6 +102,8 @@ export async function fetchEvents(schoolYearId) {
     category: record.categories?.name || '',
     categoryClass: record.categories?.slug || categoryClassNames[record.categories?.name],
     audience: record.audiences?.name || '',
+    isPrivate: record.is_private,
+    createdBy: record.created_by,
   }))
 }
 
@@ -128,6 +130,7 @@ export async function saveEvent(event, { profile, schoolYear, categories, audien
     all_day: event.allDay,
     location: event.location,
     organizer: event.organizer || '',
+    is_private: profile.role === 'teacher' ? true : Boolean(event.isPrivate),
     updated_by: profile.id,
   }
 
@@ -165,6 +168,7 @@ export async function saveEvents(events, { profile, schoolYear, categories, audi
       all_day: event.allDay,
       location: event.location,
       organizer: event.organizer || '',
+      is_private: false,
       created_by: profile.id,
       updated_by: profile.id,
     }

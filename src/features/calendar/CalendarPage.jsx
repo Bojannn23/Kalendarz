@@ -173,7 +173,14 @@ function CalendarPage() {
     (event) => event.startDate <= selectedDate && event.endDate >= selectedDate,
   )
   const upcomingEvent = visibleEvents.find((event) => event.startDate > selectedDate)
-  const canManage = profile?.role === 'admin'
+  const canCreateEvents = profile?.role === 'admin' || profile?.role === 'teacher'
+  const canImportEvents = profile?.role === 'admin'
+  const canManageEvent = (event) => {
+    if (!event) return false
+    return profile?.role === 'admin'
+      ? !event.isPrivate
+      : profile?.role === 'teacher' && event.isPrivate && event.createdBy === profile.id
+  }
 
   async function reloadEvents() {
     if (!schoolYear) return
@@ -192,21 +199,26 @@ function CalendarPage() {
   }
 
   function startCreate() {
-    if (!canManage) return
+    if (!canCreateEvents) return
     setEditingEvent(null)
     setPreviousPage(page === 'events' ? 'events' : 'calendar')
     setPage('form')
   }
 
   function startEdit(event) {
-    if (!canManage) return
+    if (!canManageEvent(event)) return
     setEditingEvent(event)
     setPreviousPage(page === 'events' ? 'events' : 'calendar')
     setPage('form')
   }
 
   async function saveEvent(eventData) {
-    if (!canManage || !profile || !schoolYear) return
+    if (
+      !canCreateEvents ||
+      !profile ||
+      !schoolYear ||
+      (eventData.id && !canManageEvent(events.find((event) => event.id === eventData.id)))
+    ) return
     setMutationBusy(true)
     setMutationError('')
     try {
@@ -222,7 +234,7 @@ function CalendarPage() {
   }
 
   async function importEvents(importedEvents) {
-    if (!canManage || !profile || !schoolYear) return
+    if (!canImportEvents || !profile || !schoolYear) return
     setMutationBusy(true)
     try {
       await saveEventsRecord(importedEvents, { profile, schoolYear, ...taxonomy })
@@ -235,7 +247,7 @@ function CalendarPage() {
   }
 
   async function confirmDelete(event) {
-    if (!canManage) return
+    if (!canManageEvent(event)) return
     setMutationBusy(true)
     setMutationError('')
     try {
@@ -263,7 +275,7 @@ function CalendarPage() {
   }
 
   function requestDelete(event) {
-    if (!canManage) return
+    if (!canManageEvent(event)) return
     if (page !== 'form') setPreviousPage(page)
     setDeleteTarget(event)
   }
@@ -285,7 +297,7 @@ function CalendarPage() {
     return (
       <StatusPanel
         title="Konto nie jest przypisane do szkoły"
-        message="Administrator bazy musi dodać profil użytkownika z rolą viewer lub admin."
+        message="Administrator bazy musi dodać profil użytkownika z rolą teacher lub admin."
         actionLabel="Wyloguj się"
         onAction={handleSignOut}
         error={mutationError}
@@ -325,6 +337,7 @@ function CalendarPage() {
           <EventForm
             key={editingEvent?.id || 'new-event'}
             event={editingEvent}
+            profile={profile}
             initialDate={selectedDate}
             schoolYear={schoolYear}
             categories={taxonomy.categories}
@@ -398,15 +411,15 @@ function CalendarPage() {
                   <FiList /> Lista
                 </button>
               </div>
-              {canManage && (
-                <>
-                  <button className="btn btn-outline-secondary page-add-button" type="button" onClick={() => setShowImport(true)}>
+              {canImportEvents && (
+                <button className="btn btn-outline-secondary page-add-button" type="button" onClick={() => setShowImport(true)}>
                     <FiUpload /> Importuj plik
-                  </button>
+                </button>
+              )}
+              {canCreateEvents && (
                   <button className="btn btn-success page-add-button" type="button" onClick={startCreate}>
                     <FiPlus /> Dodaj wydarzenie
                   </button>
-                </>
               )}
               </div>
             </div>
@@ -435,7 +448,7 @@ function CalendarPage() {
                     onDelete={requestDelete}
                     onCreate={startCreate}
                     onSelect={selectEvent}
-                    canManage={canManage}
+                    canManageEvent={canManageEvent}
                   />
                 </div>
               </>
@@ -445,7 +458,7 @@ function CalendarPage() {
                   <h2>{formatMonth(currentMonth)}</h2>
                   <span>{monthEvents.length} {pluralize(monthEvents.length, 'wydarzenie', 'wydarzenia', 'wydarzeń')}</span>
                 </div>
-                <EventsList events={monthEvents} canManage={canManage} onEdit={startEdit} onDelete={requestDelete} onSelect={selectEvent} />
+                <EventsList events={monthEvents} canManageEvent={canManageEvent} onEdit={startEdit} onDelete={requestDelete} onSelect={selectEvent} />
                 <p className="list-footer">Wyświetlono {monthEvents.length} z {allMonthEventCount} wydarzeń · Od najwcześniejszego terminu</p>
               </section>
             )}
@@ -461,7 +474,7 @@ function CalendarPage() {
           onConfirm={confirmDelete}
         />
       )}
-      {showImport && canManage && (
+      {showImport && canImportEvents && (
         <ImportEventsDialog
           categories={taxonomy.categories}
           audiences={taxonomy.audiences}
@@ -484,7 +497,7 @@ function SelectedDayPanel({
   onDelete,
   onCreate,
   onSelect,
-  canManage,
+  canManageEvent,
 }) {
   const date = new Date(`${selectedDate}T12:00:00`)
   const dayTitle = new Intl.DateTimeFormat('pl-PL', { day: 'numeric', month: 'long' }).format(date)
@@ -499,13 +512,13 @@ function SelectedDayPanel({
         <span>{capitalize(weekday)} · {events.length} {pluralize(events.length, 'wydarzenie', 'wydarzenia', 'wydarzeń')}{isToday ? ' · Dzisiaj' : ''}</span>
       </div>
       {events.length ? events.map((event) => (
-        <EventCard key={event.id} event={event} canManage={canManage} onEdit={onEdit} onDelete={onDelete} onSelect={onSelect} />
+        <EventCard key={event.id} event={event} canManage={canManageEvent(event)} onEdit={onEdit} onDelete={onDelete} onSelect={onSelect} />
       )) : (
         <div className="empty-day">
           <FiCalendar />
           <strong>Brak wydarzeń w tym dniu</strong>
           <span>W wybranym dniu nie zaplanowano terminów.</span>
-          {canManage && <button className="btn btn-outline-secondary" type="button" onClick={onCreate}><FiPlus /> Dodaj wydarzenie</button>}
+          <button className="btn btn-outline-secondary" type="button" onClick={onCreate}><FiPlus /> Dodaj wydarzenie</button>
         </div>
       )}
       {events[0]?.description && (
@@ -515,7 +528,7 @@ function SelectedDayPanel({
         <section className="upcoming-section">
           <h3>Następne wydarzenie</h3>
           <p className="upcoming-section__date">{formatFullDate(new Date(`${upcomingEvent.startDate}T12:00:00`))}</p>
-          <EventCard event={upcomingEvent} compact canManage={canManage} onSelect={onSelect} />
+          <EventCard event={upcomingEvent} compact canManage={canManageEvent(upcomingEvent)} onSelect={onSelect} />
         </section>
       )}
     </aside>
@@ -566,7 +579,7 @@ function ProfilePage({ profile, year, onSignOut, error }) {
       <div className="page-heading"><div><h1>Profil</h1><p>Informacje o koncie i szkole.</p></div></div>
       <div className="profile-card card">
         <span className="avatar avatar--large">{getInitials(profile.fullName)}</span>
-        <div><h2>{profile.fullName || 'Użytkownik'}</h2><p>{profile.role === 'admin' ? 'Administrator' : 'Tylko podgląd'}</p></div>
+        <div><h2>{profile.fullName || 'Użytkownik'}</h2><p>{profile.role === 'admin' ? 'Administrator' : 'Nauczyciel'}</p></div>
         <dl><dt>Szkoła</dt><dd>{profile.schoolName}</dd><dt>Rok szkolny</dt><dd>{year}</dd></dl>
         {error && <p className="alert alert-danger mb-0" role="alert">{error}</p>}
         <button className="btn btn-outline-secondary" type="button" onClick={onSignOut}>Wyloguj się</button>

@@ -798,17 +798,14 @@ body {
   line-height: 1.35;
 }
 
-.calendar-day__more {
-  border: 0;
-  padding: 2px;
-  background: none;
-  color: var(--primary);
-  cursor: pointer;
-  text-align: left;
-  font-size: 11px;
+.calendar-day__dots {
+  display: flex;
+  min-height: 6px;
+  align-items: center;
+  gap: 3px;
 }
 
-.calendar-day__dots {
+.calendar-day__dot--first {
   display: none;
 }
 
@@ -1597,8 +1594,7 @@ a:focus-visible {
     margin-top: 1px;
   }
 
-  .event-chip,
-  .calendar-day__more {
+  .event-chip {
     display: none;
   }
 
@@ -1608,6 +1604,10 @@ a:focus-visible {
     align-items: center;
     justify-content: center;
     gap: 2px;
+  }
+
+  .calendar-day__dot--first {
+    display: inline-block;
   }
 
   .category-dot {

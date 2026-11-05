@@ -34,7 +34,7 @@ Polecenia `npm run build` i `npm run lint` służą odpowiednio do budowania i s
 
 1. Zależności Supabase są instalowane razem z pozostałymi przez `npm install`.
 2. Skopiuj `.env.example` do `.env.local`. Wpisz adres projektu i klucz publishable z ustawień Supabase w zmiennych `VITE_SUPABASE_URL` oraz `VITE_SUPABASE_PUBLISHABLE_KEY`. `.env.local` jest ignorowany przez Git. Po zmianie zmiennych uruchom ponownie Vite.
-3. W Supabase otwórz **SQL Editor** i wykonaj zawartość `supabase/migrations/20261014000000_school_calendar.sql`. Migracja tworzy tabele szkół, lat szkolnych, profili, kategorii, odbiorców i wydarzeń oraz polityki Row Level Security (RLS). Osiem przykładowych wydarzeń października 2026 trafia do bazy, nie do kodu frontendu.
+3. W Supabase otwórz **SQL Editor** i wykonaj migracje z katalogu `supabase/migrations` w kolejności nazw. Pierwsza tworzy tabele, polityki Row Level Security (RLS) i przykładowe wydarzenia. Druga zmienia rolę `viewer` na `teacher` i dodaje prywatne wydarzenia nauczycieli. Przy istniejącej bazie wykonaj tylko nową migrację `20261105000000_teacher_private_events.sql`.
 4. Utwórz konto przez **Authentication → Users**. Publiczna rejestracja nie jest wymagana.
 5. Przypisz konto do szkoły w SQL Editorze. Zastąp adres e-mail administratorem:
 
@@ -47,9 +47,9 @@ Polecenia `npm run build` i `npm run lint` służą odpowiednio do budowania i s
      and school.slug = 'sp24';
    ```
 
-   Kolejnych użytkowników dodaj w ten sam sposób, zmieniając rolę na `viewer`. Nie dodawaj edycji profilu ani zmiany roli po stronie klienta.
+   Kolejnych nauczycieli dodaj w ten sam sposób, zmieniając rolę na `teacher`. Nauczyciel może dodawać wydarzenia dla wybranych odbiorców/klas; widzi je tylko konto, które je utworzyło. Administratorzy dodają wydarzenia widoczne w całej szkole. Nie dodawaj edycji profilu ani zmiany roli po stronie klienta.
 6. Uruchom `npm run dev` i zaloguj się utworzonym kontem.
 
-Frontend używa wyłącznie klucza publishable. Uprawnienia do dodawania, edycji i usuwania wymuszają polityki RLS w bazie; rola `admin` nie jest przyznawana na podstawie stanu interfejsu. Klucza `service_role` nie wolno umieszczać w aplikacji.
+Frontend używa wyłącznie klucza publishable. Uprawnienia do dodawania, edycji, usuwania i odczytu prywatnych wydarzeń wymuszają polityki RLS w bazie; role nie są przyznawane na podstawie stanu interfejsu. Klucza `service_role` nie wolno umieszczać w aplikacji.
 
 Jeśli nie ma konfiguracji lub użytkownik nie ma profilu w szkole, aplikacja wyświetla komunikat zamiast atrap danych. Trwałość zapisów zależy od poprawnego uruchomienia migracji w projekcie Supabase.

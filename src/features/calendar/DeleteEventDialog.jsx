@@ -29,7 +29,7 @@ function DeleteEventDialog({ event, error, busy, onCancel, onConfirm }) {
         <button className="btn btn-outline-secondary icon-button" type="button" aria-label="Zamknij" onClick={onCancel} disabled={busy}><FiX /></button>
       </div>
       <h2>Usunąć wydarzenie?</h2>
-      <p className="delete-dialog__description">Wydarzenie zniknie z kalendarza wszystkich użytkowników. Tej zmiany nie można cofnąć.</p>
+      <p className="delete-dialog__description">Wydarzenie zostanie usunięte i nie będzie można go przywrócić.</p>
       <div className="delete-summary">
         <CategoryBadge category={event.category} />
         <strong>{event.title}</strong>

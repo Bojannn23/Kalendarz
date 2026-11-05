@@ -12,12 +12,13 @@ const emptyEvent = {
   startTime: '09:00',
   endTime: '10:00',
   location: '',
-  organizer: 'Anna Kowalska',
+  organizer: '',
   allDay: false,
 }
 
 function EventForm({
   event,
+  profile,
   initialDate,
   schoolYear,
   categories,
@@ -34,6 +35,7 @@ function EventForm({
     audience: audiences[0]?.name || '',
     startDate: initialDate,
     endDate: initialDate,
+    organizer: profile.fullName || '',
   })
   const [errors, setErrors] = useState({})
   const isEditing = Boolean(event)
@@ -93,6 +95,7 @@ function EventForm({
         <div>
           <h1>{isEditing ? 'Edytuj wydarzenie' : 'Dodaj wydarzenie'}</h1>
           <p>{isEditing ? 'Zaktualizuj informacje widoczne w kalendarzu szkoły.' : 'Zaplanuj nowy termin w roku szkolnym.'}</p>
+          {profile.role === 'teacher' && <p className="text-muted">To wydarzenie będzie widoczne tylko dla Ciebie.</p>}
         </div>
         <span className="form-status">{isEditing ? 'Opublikowane' : 'Nowe · niezapisane'}</span>
       </div>

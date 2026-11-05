@@ -87,7 +87,7 @@ function CalendarGrid({
                 {date.getDate()}
               </button>
               <div className="calendar-day__events">
-                {dayEvents.slice(0, 2).map((event) => (
+                {dayEvents.slice(0, 1).map((event) => (
                   <button
                     className={`event-chip category-${event.categoryClass}`}
                     key={event.id}
@@ -99,14 +99,19 @@ function CalendarGrid({
                     <span className="event-chip__title">{event.title}</span>
                   </button>
                 ))}
-                {dayEvents.length > 2 && (
-                  <button className="calendar-day__more" type="button" onClick={() => onDateSelect(date)}>
-                    +{dayEvents.length - 2} więcej
-                  </button>
-                )}
                 <div className="calendar-day__dots" aria-hidden="true">
                   {dayEvents.slice(0, 4).map((event) => (
-                    <span className={`category-dot category-${event.categoryClass}`} key={event.id} />
+                    <span
+                      className={[
+                        'category-dot',
+                        'calendar-day__dot',
+                        dayEvents[0]?.id === event.id && 'calendar-day__dot--first',
+                        `category-${event.categoryClass}`,
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                      key={event.id}
+                    />
                   ))}
                 </div>
               </div>

@@ -81,6 +81,11 @@ export function formatShortDate(dateKey) {
   }).format(date)
 }
 
+export function formatWeekday(dateKey) {
+  const date = new Date(`${dateKey}T12:00:00`)
+  return new Intl.DateTimeFormat('pl-PL', { weekday: 'short' }).format(date)
+}
+
 export function getDuration(startDate, endDate, startTime, endTime, allDay) {
   if (allDay) return 'Cały dzień'
   if (startDate !== endDate) return `${formatShortDate(startDate)} – ${formatShortDate(endDate)}`

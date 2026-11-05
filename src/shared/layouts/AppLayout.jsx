@@ -1,7 +1,7 @@
 import { FiCalendar, FiList, FiMenu, FiMoon, FiSun, FiUser } from 'react-icons/fi'
 
 function AppLayout({ children, page, contentPage = page, profile, schoolName, schoolYearLabel, theme, onThemeToggle, onNavigate }) {
-  const roleLabel = profile.role === 'admin' ? 'Zarządzanie' : 'Tylko podgląd'
+  const roleLabel = profile.role === 'admin' ? 'Administrator' : 'Nauczyciel'
   const profileName = profile.fullName || 'Użytkownik'
   const initials = profileName
     .split(/\s+/)
