@@ -810,23 +810,104 @@ body {
 }
 
 .category-organization {
-  background: #e9f4f0;
-  color: #227769;
+  background: #f0e9fa;
+  color: #7050a0;
 }
 
 .category-meeting {
   background: #edf4fb;
-  color: #366fa1;
+  color: #2867a3;
 }
 
 .category-ceremony {
-  background: #f3eff8;
-  color: #795ca0;
+  background: #fcebf1;
+  color: #a63e68;
 }
 
 .category-trip {
-  background: #fbf4e6;
-  color: #9a7025;
+  background: #fff0df;
+  color: #a95a12;
+}
+
+.event-chip.category-organization {
+  background-color: #f0e9fa;
+}
+
+.event-chip.category-meeting {
+  background-color: #edf4fb;
+}
+
+.event-chip.category-ceremony {
+  background-color: #fcebf1;
+}
+
+.event-chip.category-trip {
+  background-color: #fff0df;
+}
+
+:root[data-theme='dark'] .category-organization {
+  color: #d3b5f2;
+}
+
+:root[data-theme='dark'] .category-meeting {
+  color: #8fc5f2;
+}
+
+:root[data-theme='dark'] .category-ceremony {
+  color: #f2a9c5;
+}
+
+:root[data-theme='dark'] .category-trip {
+  color: #ffc078;
+}
+
+:root[data-theme='dark'] .event-chip.category-organization {
+  background: #40334d;
+}
+
+:root[data-theme='dark'] .event-chip.category-meeting {
+  background: #263f53;
+}
+
+:root[data-theme='dark'] .event-chip.category-ceremony {
+  background: #4b3040;
+}
+
+:root[data-theme='dark'] .event-chip.category-trip {
+  background: #513a26;
+}
+
+:root[data-theme='dark'] .event-card.category-organization {
+  background: #40334d;
+}
+
+:root[data-theme='dark'] .event-card.category-meeting {
+  background: #263f53;
+}
+
+:root[data-theme='dark'] .event-card.category-ceremony {
+  background: #4b3040;
+}
+
+:root[data-theme='dark'] .event-card.category-trip {
+  background: #513a26;
+}
+
+.category-other {
+  background: #eef1f3;
+  color: #53616a;
+}
+
+:root[data-theme='dark'] .category-other {
+  color: #c0ceca;
+}
+
+:root[data-theme='dark'] .event-chip.category-other {
+  background: #344043;
+}
+
+:root[data-theme='dark'] .event-card.category-other {
+  background: #344043;
 }
 
 .category-badge {

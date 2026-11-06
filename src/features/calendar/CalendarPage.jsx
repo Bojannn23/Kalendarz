@@ -14,6 +14,7 @@ import AppLayout from '../../shared/layouts/AppLayout.jsx'
 import {
   formatFullDate,
   formatMonth,
+  getCategoryClassName,
   getSchoolYearLabel,
   getWarsawToday,
   toDateKey,
@@ -108,7 +109,7 @@ function CalendarPage() {
           throw new Error(`W bazie nie ma skonfigurowanego roku szkolnego ${yearLabel}. Zastosuj migrację Supabase.`)
         }
 
-        const nextEvents = await fetchEvents(nextSchoolYear.id)
+        const nextEvents = await fetchEvents(nextSchoolYear.id, nextTaxonomy.categories)
         if (!active || currentRequest !== requestId) return
         setProfile(nextProfile)
         setSchoolYear(nextSchoolYear)
@@ -184,7 +185,7 @@ function CalendarPage() {
 
   async function reloadEvents() {
     if (!schoolYear) return
-    setEvents(await fetchEvents(schoolYear.id))
+    setEvents(await fetchEvents(schoolYear.id, taxonomy.categories))
   }
 
   function changeMonth(amount) {
@@ -536,10 +537,12 @@ function SelectedDayPanel({
 }
 
 function EventCard({ event, compact = false, canManage, onEdit, onDelete, onSelect}) {
+  const categoryClass = getCategoryClassName(event.category || event.categoryClass, event.title)
+
   return (
-    <article className={`event-card card${compact ? ' event-card--compact' : ''}`}>
+    <article className={`event-card card category-${categoryClass}${compact ? ' event-card--compact' : ''}`}>
       <button className="event-card__body" type="button" onClick={() => onSelect(event)}>
-        <CategoryBadge category={event.category} />
+        <CategoryBadge category={event.category} categoryClass={categoryClass} />
         <strong>{event.title}</strong>
         <span><FiClock /> {event.allDay ? 'Cały dzień' : `${event.startTime}–${event.endTime}`}</span>
         <span><FiMapPin /> {event.location}</span>

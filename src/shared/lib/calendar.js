@@ -20,6 +20,42 @@ export const categoryClassNames = {
   Wycieczki: 'trip',
 }
 
+function normalizeCategory(value) {
+  return value
+    ?.trim()
+    .toLocaleLowerCase('pl-PL')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+}
+
+export function getCategoryClassName(category, title = '') {
+  const name = normalizeCategory(category?.name || category)
+  const slug = normalizeCategory(category?.slug)
+  const normalizedTitle = normalizeCategory(title) || ''
+  const knownCategory = Object.entries(categoryClassNames).find(
+    ([categoryName, categorySlug]) => (
+      normalizeCategory(categoryName) === name ||
+      categorySlug === slug ||
+      categorySlug === name
+    ),
+  )
+
+  if (knownCategory) return knownCategory[1]
+
+  const categoryText = `${name || ''} ${slug || ''}`
+  if (/wyciecz|wyjsc|wyjazd|kino|trip/.test(categoryText)) return 'trip'
+  if (/organiz|ewakuac|samorzad|organization/.test(categoryText)) return 'organization'
+  if (/spotkan|zebran|konsultac|rodzic|rada pedagog|wyklad|meeting/.test(categoryText)) return 'meeting'
+  if (/uroczyst|ceremon|slubowan|apel|dzien edukacji/.test(categoryText)) return 'ceremony'
+
+  if (/wyciecz|wyjsc|wyjazd|kino/.test(normalizedTitle)) return 'trip'
+  if (/organiz|ewakuac|samorzad/.test(normalizedTitle)) return 'organization'
+  if (/spotkan|zebran|konsultac|rodzic|rada pedagog|wyklad/.test(normalizedTitle)) return 'meeting'
+  if (/uroczyst|slubowan|apel|dzien edukacji/.test(normalizedTitle)) return 'ceremony'
+
+  return 'other'
+}
+
 export function getSchoolYearLabel(date = new Date()) {
   const year = date.getFullYear()
   const startYear = date.getMonth() >= 8 ? year : year - 1

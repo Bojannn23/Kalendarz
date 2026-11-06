@@ -1,6 +1,7 @@
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import {
   formatMonth,
+  getCategoryClassName,
   getMonthCalendarDays,
   toDateKey,
 } from '../../shared/lib/calendar.js'
@@ -89,7 +90,7 @@ function CalendarGrid({
               <div className="calendar-day__events">
                 {dayEvents.slice(0, 1).map((event) => (
                   <button
-                    className={`event-chip category-${event.categoryClass}`}
+                    className={`event-chip category-${getCategoryClassName(event.category || event.categoryClass, event.title)}`}
                     key={event.id}
                     type="button"
                     title={`${event.startTime} ${event.title}`}
@@ -106,7 +107,7 @@ function CalendarGrid({
                         'category-dot',
                         'calendar-day__dot',
                         dayEvents[0]?.id === event.id && 'calendar-day__dot--first',
-                        `category-${event.categoryClass}`,
+                        `category-${getCategoryClassName(event.category || event.categoryClass, event.title)}`,
                       ]
                         .filter(Boolean)
                         .join(' ')}

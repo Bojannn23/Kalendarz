@@ -211,8 +211,8 @@ function FormField({ label, required, error, className = '', children }) {
   )
 }
 
-export function CategoryBadge({ category }) {
-  const slug = { Organizacja: 'organization', Spotkania: 'meeting', Uroczystości: 'ceremony', Wycieczki: 'trip' }[category]
+export function CategoryBadge({ category, categoryClass }) {
+  const slug = categoryClass || { Organizacja: 'organization', Spotkania: 'meeting', Uroczystości: 'ceremony', Wycieczki: 'trip' }[category] || 'other'
   return <span className={`category-badge category-${slug}`}><span className="category-badge__dot" />{category}</span>
 }
 
