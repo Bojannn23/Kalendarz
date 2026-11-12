@@ -2,8 +2,9 @@ import { FiEdit2, FiSearch, FiTrash2 } from 'react-icons/fi'
 import { CategoryBadge } from './EventForm.jsx'
 import { formatShortDate, formatWeekday } from '../../shared/lib/calendar.js'
 
-function EventsList({ events, canManageEvent, onEdit, onDelete, onSelect }) {
+function EventsList({ events, categories, eventColorHues, canManageEvent, onEdit, onDelete, onSelect }) {
   const hasManageableEvents = events.some(canManageEvent)
+  const categoriesById = new Map(categories.map((category) => [category.id, category.name]))
 
   return (
     <div className="events-table-wrap table-responsive">
@@ -25,8 +26,22 @@ function EventsList({ events, canManageEvent, onEdit, onDelete, onSelect }) {
                 <small className="events-table__weekday">{formatWeekday(event.startDate)}</small>
                 <small>{event.allDay ? 'Cały dzień' : `${event.startTime}–${event.endTime}`}</small>
               </td>
-              <td className="events-table__title"><button className="event-title-button" type="button" onClick={() => onSelect(event)}>{event.title}</button><small>{event.location}</small></td>
-              <td className="events-table__category"><CategoryBadge category={event.category} /></td>
+              <td className="events-table__title">
+                <div className="events-table__title-content">
+                  <i
+                    className="event-color-dot events-table__color"
+                    style={{ '--event-hue': eventColorHues.get(event.id) }}
+                    aria-hidden="true"
+                  />
+                  <div>
+                    <button className="event-title-button" type="button" onClick={() => onSelect(event)}>{event.title}</button>
+                    <small>{event.location}</small>
+                  </div>
+                </div>
+              </td>
+              <td className="events-table__category">
+                <CategoryBadge category={event.category || categoriesById.get(event.categoryId) || 'Brak kategorii'} />
+              </td>
               <td className="events-table__audience">{event.audience}</td>
               {hasManageableEvents && (
                 <td className="events-table__actions">

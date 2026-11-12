@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { FiCalendar, FiLogIn } from 'react-icons/fi'
+import { FiLogIn } from 'react-icons/fi'
+import logo from '../../assets/logo.png'
 import { signIn } from './eventsApi.js'
 import { isSupabaseConfigured } from '../../shared/lib/supabase.js'
 
@@ -28,7 +29,7 @@ function AuthPanel() {
       <div className="card mx-auto auth-card">
         <div className="card-body p-4 p-md-5">
           <div className="d-flex align-items-center gap-2 mb-4">
-            <span className="brand__icon"><FiCalendar /></span>
+            <img className="auth-brand__logo" src={logo} alt="" />
             <strong>Szkolny plan</strong>
           </div>
           <h1 className="h3 mb-2">Zaloguj się</h1>

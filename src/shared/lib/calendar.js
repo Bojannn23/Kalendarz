@@ -20,6 +20,13 @@ export const categoryClassNames = {
   Wycieczki: 'trip',
 }
 
+export function getEventColorHues(events) {
+  const ids = [...new Set(events.map((event) => event.id))].sort()
+  const hueStep = 360 / ids.length
+
+  return new Map(ids.map((id, index) => [id, Math.round(index * hueStep)]))
+}
+
 export function getSchoolYearLabel(date = new Date()) {
   const year = date.getFullYear()
   const startYear = date.getMonth() >= 8 ? year : year - 1

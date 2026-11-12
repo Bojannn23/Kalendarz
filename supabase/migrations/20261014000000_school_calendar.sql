@@ -203,7 +203,7 @@ grant select on public.schools, public.school_years, public.profiles,
 grant insert, update, delete on public.events to authenticated;
 
 insert into public.schools (name, slug)
-values ('Szkoła Podstawowa nr 24 im. Marii Skłodowskiej-Curie', 'sp24')
+values ('Zespół Szkół nr 4 w Tychach', 'sp24')
 on conflict (slug) do update set name = excluded.name;
 
 insert into public.school_years (school_id, label, start_date, end_date)

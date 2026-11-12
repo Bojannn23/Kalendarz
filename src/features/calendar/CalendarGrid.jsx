@@ -11,6 +11,7 @@ function CalendarGrid({
   currentMonth,
   selectedDate,
   events,
+  eventColorHues,
   today,
   onMonthChange,
   onDateSelect,
@@ -89,10 +90,11 @@ function CalendarGrid({
               <div className="calendar-day__events">
                 {dayEvents.slice(0, 1).map((event) => (
                   <button
-                    className={`event-chip category-${event.categoryClass}`}
+                    className="event-chip event-colorized"
                     key={event.id}
                     type="button"
                     title={`${event.startTime} ${event.title}`}
+                    style={{ '--event-hue': eventColorHues.get(event.id) }}
                     onClick={() => onEventSelect(event)}
                   >
                     <span className="event-chip__time">{event.allDay ? 'Cały dzień' : event.startTime}</span>
@@ -104,12 +106,13 @@ function CalendarGrid({
                     <span
                       className={[
                         'category-dot',
+                        'event-color-dot',
                         'calendar-day__dot',
                         dayEvents[0]?.id === event.id && 'calendar-day__dot--first',
-                        `category-${event.categoryClass}`,
                       ]
                         .filter(Boolean)
                         .join(' ')}
+                      style={{ '--event-hue': eventColorHues.get(event.id) }}
                       key={event.id}
                     />
                   ))}

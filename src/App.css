@@ -206,15 +206,27 @@ body {
   color: var(--text);
 }
 
-.brand__icon {
-  display: inline-grid;
-  width: 32px;
-  height: 32px;
+.brand__logo {
+  display: block;
+  width: 44px;
+  height: 44px;
   flex: 0 0 auto;
-  place-items: center;
-  border-radius: 8px;
-  background: var(--primary);
-  color: #fff;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  padding: 3px;
+  background-color: #fff;
+  object-fit: contain;
+}
+
+.auth-brand__logo {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  padding: 4px;
+  background-color: #fff;
+  object-fit: contain;
 }
 
 .school-name {
@@ -642,6 +654,184 @@ body {
   align-items: start;
 }
 
+.year-overview {
+  display: grid;
+  gap: 14px;
+}
+
+.year-overview__months {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.year-month {
+  min-width: 0;
+  border-color: var(--border);
+  padding: 10px;
+}
+
+.year-month__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 7px;
+}
+
+.year-month__title {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.year-month__header > span,
+.year-month__event-count {
+  color: var(--text-muted);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.year-month__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.year-month__weekday {
+  padding: 3px 0;
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.year-month__day {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 27px;
+  place-items: center;
+  border: 0;
+  border-radius: 4px;
+  padding: 2px 0 5px;
+  background: transparent;
+  color: var(--text);
+  font-size: 10px;
+}
+
+.year-month__day:not(:disabled) {
+  cursor: pointer;
+}
+
+.year-month__day--weekend {
+  background: var(--surface-muted);
+}
+
+.year-month__day--outside {
+  color: var(--text-muted);
+  opacity: 0.45;
+}
+
+.year-month__day--today {
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.year-month__day--selected {
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.year-month__markers {
+  position: absolute;
+  right: 0;
+  bottom: 1px;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+}
+
+.year-month__markers .category-dot {
+  width: 4px;
+  height: 4px;
+}
+
+.year-month__event-count {
+  display: block;
+  margin-top: 6px;
+  text-align: right;
+}
+
+.year-overview__semesters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.year-semester {
+  min-width: 0;
+  border-color: var(--border);
+  padding: 12px;
+}
+
+.year-semester h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
+.year-semester__list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.year-semester__event {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 76px minmax(0, 1fr) auto;
+  gap: 8px;
+  border: 0;
+  border-radius: 4px;
+  padding: 5px;
+  background: transparent;
+  color: var(--text);
+  font-size: 11px;
+  text-align: left;
+}
+
+.year-semester__event:not(:disabled) {
+  cursor: pointer;
+}
+
+.year-semester__event:hover {
+  background: var(--surface-muted);
+}
+
+.year-semester__event time,
+.year-semester__event small,
+.year-semester__empty,
+.year-overview__note {
+  color: var(--text-muted);
+}
+
+.year-semester__empty {
+  margin: 0;
+  font-size: 12px;
+}
+
+.year-overview__note {
+  margin: 0;
+  font-size: 11px;
+}
+
 .calendar-main {
   min-width: 0;
 }
@@ -781,12 +971,26 @@ body {
   border-left: 2px solid currentColor;
   border-radius: 3px;
   padding: 5px 6px;
+  background: var(--primary-light);
+  color: var(--primary);
   cursor: pointer;
   text-align: left;
 }
 
 .event-chip__time {
   font-size: 10px;
+}
+
+.event-chip.event-colorized {
+  border-left-color: hsl(var(--event-hue) 62% 36%);
+  background-color: hsl(var(--event-hue) 70% 94%);
+  color: hsl(var(--event-hue) 62% 36%);
+}
+
+:root[data-theme='dark'] .event-chip.event-colorized {
+  border-left-color: hsl(var(--event-hue) 70% 72%);
+  background-color: hsl(var(--event-hue) 38% 23%);
+  color: hsl(var(--event-hue) 70% 72%);
 }
 
 .event-chip__title {
@@ -809,6 +1013,17 @@ body {
   display: none;
 }
 
+.category-badge__dot,
+.category-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: currentColor;
+  color: var(--primary);
+}
+
 .category-organization {
   background: #e9f4f0;
   color: #227769;
@@ -829,6 +1044,14 @@ body {
   color: #9a7025;
 }
 
+.event-color-dot {
+  color: hsl(var(--event-hue) 62% 36%);
+}
+
+:root[data-theme='dark'] .event-color-dot {
+  color: hsl(var(--event-hue) 70% 72%);
+}
+
 .category-badge {
   display: inline-flex;
   width: fit-content;
@@ -838,16 +1061,6 @@ body {
   padding: 4px 6px;
   font-size: 11px;
   white-space: nowrap;
-}
-
-.category-badge__dot,
-.category-dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  background: currentColor;
 }
 
 .calendar-footer {
@@ -1062,6 +1275,27 @@ body {
 .events-table td:first-child small,
 .events-table td:nth-child(2) small {
   display: block;
+}
+
+.events-table__title-content {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.events-table__title-content > div {
+  min-width: 0;
+}
+
+.events-table__color {
+  display: block;
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 .events-table td:first-child strong {
@@ -1410,6 +1644,10 @@ a:focus-visible {
   .sidebar {
     width: 190px;
   }
+
+  .year-overview__months {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 991.98px) {
@@ -1456,9 +1694,9 @@ a:focus-visible {
     font-size: 15px;
   }
 
-  .mobile-header .brand__icon {
-    width: 29px;
-    height: 29px;
+  .mobile-header .brand__logo {
+    width: 38px;
+    height: 38px;
   }
 
   .mobile-header .topbar__role {
@@ -1525,7 +1763,49 @@ a:focus-visible {
   }
 
   .view-switch {
-    display: none !important;
+    display: flex !important;
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .view-switch .btn {
+    flex: 1 1 0;
+    font-size: 11px;
+  }
+
+  .year-overview__months {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .year-month {
+    padding: 7px;
+  }
+
+  .year-month__header {
+    align-items: start;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .year-month__title {
+    font-size: 13px;
+  }
+
+  .year-month__day {
+    min-height: 25px;
+  }
+
+  .year-overview__semesters {
+    grid-template-columns: 1fr;
+  }
+
+  .year-semester__event {
+    grid-template-columns: 68px minmax(0, 1fr);
+  }
+
+  .year-semester__event small {
+    grid-column: 2;
   }
 
   .calendar-layout {

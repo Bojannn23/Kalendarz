@@ -1,4 +1,3 @@
-import { categoryClassNames } from '../../shared/lib/calendar.js'
 import { supabase } from '../../shared/lib/supabase.js'
 
 function requireSupabase() {
@@ -71,14 +70,15 @@ export async function fetchTaxonomy() {
   }
 }
 
-export async function fetchEvents(schoolYearId) {
+export async function fetchEvents(schoolYearId, categories) {
   const client = requireSupabase()
+  const categoriesById = new Map(categories.map((category) => [category.id, category]))
   const { data, error } = await client
     .from('events')
     .select(`
       id, title, description, start_date, end_date, start_time, end_time,
       all_day, location, organizer, category_id, audience_id,
-      is_private, created_by, categories(name, slug), audiences(name)
+      is_private, created_by, audiences(name)
     `)
     .eq('school_year_id', schoolYearId)
     .order('start_date')
@@ -86,25 +86,28 @@ export async function fetchEvents(schoolYearId) {
 
   if (error) throw error
 
-  return data.map((record) => ({
-    id: record.id,
-    title: record.title,
-    description: record.description || '',
-    startDate: record.start_date,
-    endDate: record.end_date,
-    startTime: record.start_time?.slice(0, 5) || '',
-    endTime: record.end_time?.slice(0, 5) || '',
-    allDay: record.all_day,
-    location: record.location,
-    organizer: record.organizer || '',
-    categoryId: record.category_id,
-    audienceId: record.audience_id,
-    category: record.categories?.name || '',
-    categoryClass: record.categories?.slug || categoryClassNames[record.categories?.name],
-    audience: record.audiences?.name || '',
-    isPrivate: record.is_private,
-    createdBy: record.created_by,
-  }))
+  return data.map((record) => {
+    const category = categoriesById.get(record.category_id)
+
+    return {
+      id: record.id,
+      title: record.title,
+      description: record.description || '',
+      startDate: record.start_date,
+      endDate: record.end_date,
+      startTime: record.start_time?.slice(0, 5) || '',
+      endTime: record.end_time?.slice(0, 5) || '',
+      allDay: record.all_day,
+      location: record.location,
+      organizer: record.organizer || '',
+      categoryId: record.category_id,
+      audienceId: record.audience_id,
+      category: category?.name || '',
+      audience: record.audiences?.name || '',
+      isPrivate: record.is_private,
+      createdBy: record.created_by,
+    }
+  })
 }
 
 export async function saveEvent(event, { profile, schoolYear, categories, audiences }) {

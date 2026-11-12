@@ -1,4 +1,5 @@
 import { FiCalendar, FiList, FiMenu, FiMoon, FiSun, FiUser } from 'react-icons/fi'
+import logo from '../../assets/logo.png'
 
 function AppLayout({ children, page, contentPage = page, profile, schoolName, schoolYearLabel, theme, onThemeToggle, onNavigate }) {
   const roleLabel = profile.role === 'admin' ? 'Administrator' : 'Nauczyciel'
@@ -13,7 +14,7 @@ function AppLayout({ children, page, contentPage = page, profile, schoolName, sc
     <div className="app-shell d-flex min-vh-100">
       <aside className="sidebar position-sticky top-0 d-flex flex-column flex-shrink-0 bg-white border-end p-3">
         <a className="brand d-inline-flex align-items-center gap-2 fw-bold text-decoration-none" href="#calendar" onClick={(event) => { event.preventDefault(); onNavigate('calendar') }}>
-          <span className="brand__icon"><FiCalendar /></span>
+          <img className="brand__logo" src={logo} alt="" />
           <span>Szkolny plan</span>
         </a>
         <div className="school-name d-grid">
@@ -47,7 +48,7 @@ function AppLayout({ children, page, contentPage = page, profile, schoolName, sc
         </header>
         <header className="mobile-header d-none align-items-center justify-content-between gap-2 bg-white border-bottom px-3">
           <button className="brand btn p-0 d-inline-flex align-items-center gap-2 fw-bold" type="button" onClick={() => onNavigate('calendar')}>
-            <span className="brand__icon"><FiCalendar /></span>
+            <img className="brand__logo" src={logo} alt="" />
             <span>Szkolny plan</span>
           </button>
           <ThemeToggle theme={theme} onClick={onThemeToggle} />

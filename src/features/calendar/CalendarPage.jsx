@@ -14,6 +14,7 @@ import AppLayout from '../../shared/layouts/AppLayout.jsx'
 import {
   formatFullDate,
   formatMonth,
+  getEventColorHues,
   getSchoolYearLabel,
   getWarsawToday,
   toDateKey,
@@ -24,6 +25,7 @@ import EventForm, { CategoryBadge } from './EventForm.jsx'
 import EventsList from './EventsList.jsx'
 import AuthPanel from './AuthPanel.jsx'
 import ImportEventsDialog from './ImportEventsDialog.jsx'
+import YearCalendar from './YearCalendar.jsx'
 import {
   deleteEvent as deleteEventRecord,
   fetchEvents,
@@ -50,6 +52,7 @@ function CalendarPage() {
   const [mutationBusy, setMutationBusy] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
   const [page, setPage] = useState('calendar')
+  const [calendarView, setCalendarView] = useState('month')
   const [previousPage, setPreviousPage] = useState('calendar')
   const [editingEvent, setEditingEvent] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
@@ -108,7 +111,7 @@ function CalendarPage() {
           throw new Error(`W bazie nie ma skonfigurowanego roku szkolnego ${yearLabel}. Zastosuj migrację Supabase.`)
         }
 
-        const nextEvents = await fetchEvents(nextSchoolYear.id)
+        const nextEvents = await fetchEvents(nextSchoolYear.id, nextTaxonomy.categories)
         if (!active || currentRequest !== requestId) return
         setProfile(nextProfile)
         setSchoolYear(nextSchoolYear)
@@ -157,6 +160,7 @@ function CalendarPage() {
       ))
       .sort((a, b) => a.startDate.localeCompare(b.startDate) || a.startTime.localeCompare(b.startTime))
   }, [events, categoryFilter, audienceFilter, search])
+  const eventColorHues = useMemo(() => getEventColorHues(events), [events])
 
   const monthEvents = useMemo(() => {
     const firstOfMonth = toDateKey(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1))
@@ -184,7 +188,7 @@ function CalendarPage() {
 
   async function reloadEvents() {
     if (!schoolYear) return
-    setEvents(await fetchEvents(schoolYear.id))
+    setEvents(await fetchEvents(schoolYear.id, taxonomy.categories))
   }
 
   function changeMonth(amount) {
@@ -225,6 +229,7 @@ function CalendarPage() {
       await saveEventRecord(eventData, { profile, schoolYear, ...taxonomy })
       await reloadEvents()
       selectDate(eventData.startDate)
+      setCalendarView('month')
       setPage(previousPage)
     } catch (error) {
       setMutationError(error.message || 'Nie udało się zapisać wydarzenia.')
@@ -282,6 +287,7 @@ function CalendarPage() {
 
   function selectEvent(event) {
     selectDate(event.startDate)
+    setCalendarView('month')
     setPage('calendar')
   }
 
@@ -356,7 +362,7 @@ function CalendarPage() {
               <div className="page-heading flex-shrink-0">
                 <div>
                   <h1>{page === 'events' ? 'Lista wydarzeń' : 'Kalendarz roku szkolnego'}</h1>
-                  <p>{page === 'events' ? 'Przeglądaj terminy i zarządzaj wydarzeniami szkolnymi.' : 'Wszystkie ważne daty w jednym, uporządkowanym miejscu.'}</p>
+                  <p>{page === 'events' ? 'Przeglądaj terminy i zarządzaj wydarzeniami szkolnymi.' : calendarView === 'year' ? 'Przegląd całego roku szkolnego i najważniejszych terminów.' : 'Wszystkie ważne daty w jednym, uporządkowanym miejscu.'}</p>
                 </div>
               </div>
 
@@ -404,8 +410,11 @@ function CalendarPage() {
                 </select>
               </label>
               <div className="view-switch btn-group" role="group" aria-label="Widok wydarzeń">
-                <button className={`btn ${page === 'calendar' ? 'btn-success' : 'btn-outline-secondary'}`} type="button" onClick={() => setPage('calendar')}>
-                  <FiCalendar /> Kalendarz
+                <button className={`btn ${page === 'calendar' && calendarView === 'month' ? 'btn-success' : 'btn-outline-secondary'}`} type="button" onClick={() => { setPage('calendar'); setCalendarView('month') }}>
+                  <FiCalendar /> Miesiąc
+                </button>
+                <button className={`btn ${page === 'calendar' && calendarView === 'year' ? 'btn-success' : 'btn-outline-secondary'}`} type="button" onClick={() => { setPage('calendar'); setCalendarView('year') }}>
+                  Rok
                 </button>
                 <button className={`btn ${page === 'events' ? 'btn-success' : 'btn-outline-secondary'}`} type="button" onClick={() => setPage('events')}>
                   <FiList /> Lista
@@ -425,6 +434,26 @@ function CalendarPage() {
             </div>
 
             {page === 'calendar' ? (
+              calendarView === 'year' ? (
+                <>
+                  <YearCalendar
+                    schoolYear={schoolYear}
+                    events={visibleEvents}
+                    eventColorHues={eventColorHues}
+                    today={today}
+                    selectedDate={selectedDate}
+                    onDateSelect={(date) => {
+                      selectDate(date)
+                      setCalendarView('month')
+                    }}
+                    onMonthSelect={(month) => {
+                      setCurrentMonth(month)
+                      setCalendarView('month')
+                    }}
+                  />
+                  <CalendarFooter eventsCount={visibleEvents.length} periodLabel="w roku szkolnym" />
+                </>
+              ) : (
               <>
                 <div className="calendar-layout row g-3">
                   <div className="calendar-main col-12 col-xl-9">
@@ -432,12 +461,13 @@ function CalendarPage() {
                       currentMonth={currentMonth}
                       selectedDate={selectedDate}
                       events={monthEvents}
+                      eventColorHues={eventColorHues}
                       today={today}
                       onMonthChange={changeMonth}
                       onDateSelect={selectDate}
                       onEventSelect={selectEvent}
                     />
-                    <CalendarFooter eventsCount={monthEvents.length} categories={taxonomy.categories} />
+                    <CalendarFooter eventsCount={monthEvents.length} />
                   </div>
                   <SelectedDayPanel
                     className="col-12 col-xl-3"
@@ -452,13 +482,14 @@ function CalendarPage() {
                   />
                 </div>
               </>
+              )
             ) : (
               <section className="list-section card">
                 <div className="list-section__heading">
                   <h2>{formatMonth(currentMonth)}</h2>
                   <span>{monthEvents.length} {pluralize(monthEvents.length, 'wydarzenie', 'wydarzenia', 'wydarzeń')}</span>
                 </div>
-                <EventsList events={monthEvents} canManageEvent={canManageEvent} onEdit={startEdit} onDelete={requestDelete} onSelect={selectEvent} />
+                <EventsList events={monthEvents} categories={taxonomy.categories} eventColorHues={eventColorHues} canManageEvent={canManageEvent} onEdit={startEdit} onDelete={requestDelete} onSelect={selectEvent} />
                 <p className="list-footer">Wyświetlono {monthEvents.length} z {allMonthEventCount} wydarzeń · Od najwcześniejszego terminu</p>
               </section>
             )}
@@ -554,21 +585,11 @@ function EventCard({ event, compact = false, canManage, onEdit, onDelete, onSele
   )
 }
 
-function CalendarFooter({ eventsCount, categories }) {
+function CalendarFooter({ eventsCount, periodLabel = 'w tym miesiącu' }) {
   return (
     <div className="calendar-footer">
-      <CategoryLegend categories={categories} />
-      <span>{eventsCount} {pluralize(eventsCount, 'wydarzenie', 'wydarzenia', 'wydarzeń')} w tym miesiącu</span>
-    </div>
-  )
-}
-
-function CategoryLegend({ categories }) {
-  return (
-    <div className="category-legend" aria-label="Kategorie wydarzeń">
-      {categories.map((category) => (
-        <span key={category.id}><i className={`category-dot category-${category.slug}`} />{category.name}</span>
-      ))}
+      <span>{eventsCount} {pluralize(eventsCount, 'wydarzenie', 'wydarzenia', 'wydarzeń')} {periodLabel}</span>
+      <span>Kolor przypisany indywidualnie do wydarzenia</span>
     </div>
   )
 }
