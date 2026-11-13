@@ -6,10 +6,10 @@ const fieldAliases = {
   description: ['description', 'opis'],
   category: ['category', 'kategoria'],
   audience: ['audience', 'odbiorcy', 'grupa'],
-  startDate: ['startdate', 'start', 'data', 'datapoczatku', 'datastartu'],
-  endDate: ['enddate', 'end', 'datakoncowa', 'datakonca'],
-  startTime: ['starttime', 'godzina', 'godzinapoczatku', 'odgodziny', 'od'],
-  endTime: ['endtime', 'godzinakonca', 'dogodziny', 'do'],
+  startDate: ['startdate', 'start', 'data', 'datapoczatku', 'datastartu', 'datarozpoczecia'],
+  endDate: ['enddate', 'end', 'datakoncowa', 'datakonca', 'datazakonczenia'],
+  startTime: ['starttime', 'godzina', 'godzinapoczatku', 'godzinarozpoczecia', 'odgodziny', 'od'],
+  endTime: ['endtime', 'godzinakonca', 'godzinazakonczenia', 'dogodziny', 'do'],
   allDay: ['allday', 'calydzien', 'calodniowe'],
   location: ['location', 'miejsce', 'lokalizacja'],
   organizer: ['organizer', 'organizator'],
@@ -288,14 +288,48 @@ function ImportEventsDialog({ categories, audiences, schoolYear, busy, onClose, 
           <label className="form-field"><span className="form-label mb-1">Domyślna kategoria</span><select className="form-select" value={defaultCategory} onChange={(event) => setDefaultCategory(event.target.value)}>{categories.map((item) => <option key={item.id}>{item.name}</option>)}</select></label>
           <label className="form-field"><span className="form-label mb-1">Domyślni odbiorcy</span><select className="form-select" value={defaultAudience} onChange={(event) => setDefaultAudience(event.target.value)}>{audiences.map((item) => <option key={item.id}>{item.name}</option>)}</select></label>
         </div>
-        <p className="import-format-note">Tabela powinna mieć nagłówki: nazwa, data rozpoczęcia, miejsce; opcjonalnie opis, kategoria, odbiorcy, data końca, godziny, organizator. Daty: RRRR-MM-DD lub DD.MM.RRRR.</p>
+        <p className="import-format-note">Wymagane są nazwa wydarzenia, data rozpoczęcia i miejsce. Daty wpisz jako RRRR-MM-DD lub DD.MM.RRRR.</p>
+        <details className="import-format-example">
+          <summary>Przykładowy format pliku</summary>
+          <div className="import-format-example__content">
+            <section className="import-format-example__section">
+              <div className="import-format-example__heading">
+                <span className="import-format-example__badge">TXT · Excel · Word</span>
+                <p>Polskie nagłówki są rozpoznawane automatycznie:</p>
+              </div>
+              <div className="import-format-example__table-wrap">
+                <table className="import-format-example__table">
+                  <thead><tr><th>Nazwa wydarzenia</th><th>Data rozpoczęcia</th><th>Godzina rozpoczęcia</th><th>Data zakończenia</th><th>Godzina zakończenia</th><th>Miejsce</th><th>Opis</th></tr></thead>
+                  <tbody><tr><td>Zebranie z rodzicami</td><td>2026-09-10</td><td>17:00</td><td>2026-09-10</td><td>18:00</td><td>Sala 12</td><td>Spotkanie dla rodziców</td></tr></tbody>
+                </table>
+              </div>
+            </section>
+            <section className="import-format-example__section">
+              <div className="import-format-example__heading">
+                <span className="import-format-example__badge">JSON</span>
+                <p>Klucze w języku polskim również są obsługiwane:</p>
+              </div>
+              <pre><code>{`[
+  {
+    "nazwa wydarzenia": "Zebranie z rodzicami",
+    "data rozpoczęcia": "2026-09-10",
+    "godzina rozpoczęcia": "17:00",
+    "data zakończenia": "2026-09-10",
+    "godzina zakończenia": "18:00",
+    "miejsce": "Sala 12",
+    "opis": "Spotkanie dla rodziców"
+  }
+]`}</code></pre>
+            </section>
+          </div>
+        </details>
         {entries.length > 0 && (
           <>
             <div className="import-summary" role="status"><strong>Do importu: {validCount}</strong>{invalidCount > 0 && <span>Pominięte błędne: {invalidCount}</span>}</div>
             <div className="import-table-wrap">
               <table className="table table-sm import-table">
                 <thead><tr><th>Wiersz</th><th>Nazwa</th><th>Data</th><th>Status</th></tr></thead>
-                <tbody>{entries.slice(0, 100).map((entry) => <tr key={entry.rowNumber}><td>{entry.rowNumber}</td><td>{entry.event.title || '—'}</td><td>{entry.event.startDate || '—'}</td><td className={entry.issues.length ? 'text-danger' : 'text-success'}>{entry.issues.join(', ') || 'Gotowe'}</td></tr>)}</tbody>
+                <tbody>{entries.slice(0, 100).map((entry) => <tr key={entry.rowNumber}><td>{entry.rowNumber}</td><td>{entry.event.title || '—'}</td><td>{entry.event.startDate || '—'}</td><td>{entry.issues.length ? <span className="text-danger">{entry.issues.join(', ')}</span> : <span className="import-status--valid">Gotowe</span>}</td></tr>)}</tbody>
               </table>
               {entries.length > 100 && <p className="import-table-note">Podgląd pierwszych 100 z {entries.length} wierszy.</p>}
             </div>

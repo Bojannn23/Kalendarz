@@ -20,11 +20,22 @@ export const categoryClassNames = {
   Wycieczki: 'trip',
 }
 
-export function getEventColorHues(events) {
-  const ids = [...new Set(events.map((event) => event.id))].sort()
-  const hueStep = 360 / ids.length
+const categoryColorHues = {
+  organization: 170,
+  meeting: 210,
+  ceremony: 267,
+  trip: 40,
+}
 
-  return new Map(ids.map((id, index) => [id, Math.round(index * hueStep)]))
+export function getCategoryColorHue(category) {
+  return categoryColorHues[categoryClassNames[category]] ?? 210
+}
+
+export function getEventColorHues(events) {
+  return new Map(events.map((event) => [
+    event.id,
+    getCategoryColorHue(event.category),
+  ]))
 }
 
 export function getSchoolYearLabel(date = new Date()) {

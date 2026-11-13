@@ -439,9 +439,9 @@ function CalendarPage() {
                   <YearCalendar
                     schoolYear={schoolYear}
                     events={visibleEvents}
+                    categories={taxonomy.categories}
                     eventColorHues={eventColorHues}
                     today={today}
-                    selectedDate={selectedDate}
                     onDateSelect={(date) => {
                       selectDate(date)
                       setCalendarView('month')

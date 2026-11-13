@@ -1,4 +1,5 @@
 import {
+  getCategoryColorHue,
   formatFullDate,
   formatMonth,
   formatShortDate,
@@ -56,6 +57,25 @@ function getWeekdayCount(month, schoolYear) {
   return count
 }
 
+function getPracticePeriods(schoolYear) {
+  if (schoolYear.label !== '2026/2027') return []
+
+  const startYear = Number(schoolYear.start_date.slice(0, 4))
+  const periods = [
+    { id: 'november', label: 'Listopad', year: startYear, month: 10, classes: ['4A', '4E', '5B (KZ)'] },
+    { id: 'february', label: 'Luty', year: startYear + 1, month: 1, classes: ['3EP', '3F'] },
+    { id: 'april', label: 'Kwiecień', year: startYear + 1, month: 3, classes: ['4DH', '4E', '4P'] },
+  ]
+
+  return periods
+    .map((period) => {
+      const start = new Date(period.year, period.month, 1)
+      const end = new Date(period.year, period.month + 1, 0)
+      return { ...period, startDate: toDateKey(start), endDate: toDateKey(end) }
+    })
+    .filter((period) => period.endDate >= schoolYear.start_date && period.startDate <= schoolYear.end_date)
+}
+
 function SemesterDates({ title, events, onDateSelect }) {
   return (
     <section className="year-semester card">
@@ -83,8 +103,9 @@ function SemesterDates({ title, events, onDateSelect }) {
   )
 }
 
-function YearCalendar({ schoolYear, events, eventColorHues, today, selectedDate, onDateSelect, onMonthSelect }) {
+function YearCalendar({ schoolYear, events, categories, eventColorHues, today, onDateSelect, onMonthSelect }) {
   const months = getSchoolMonths(schoolYear)
+  const practicePeriods = getPracticePeriods(schoolYear)
   const startDate = new Date(`${schoolYear.start_date}T12:00:00`)
   const firstSemesterEnd = toDateKey(new Date(startDate.getFullYear() + 1, 0, 15))
   const firstSemesterEvents = events.filter((event) => event.startDate <= firstSemesterEnd)
@@ -92,8 +113,9 @@ function YearCalendar({ schoolYear, events, eventColorHues, today, selectedDate,
 
   return (
     <section className="year-overview" aria-label={`Roczny kalendarz szkolny ${schoolYear.label}`}>
-      <div className="year-overview__months">
-        {months.map((month) => {
+      <div className="year-overview__main">
+        <div className="year-overview__months">
+          {months.map((month) => {
           const monthStart = toDateKey(month)
           const monthEnd = toDateKey(new Date(month.getFullYear(), month.getMonth() + 1, 0))
           const monthEvents = events.filter((event) => event.startDate <= monthEnd && event.endDate >= monthStart)
@@ -122,12 +144,15 @@ function YearCalendar({ schoolYear, events, eventColorHues, today, selectedDate,
                   const dayEvents = inMonth && inSchoolYear
                     ? monthEvents.filter((event) => event.startDate <= dateKey && event.endDate >= dateKey)
                     : []
+                  const practicePeriod = inMonth && inSchoolYear
+                    ? practicePeriods.find((period) => dateKey >= period.startDate && dateKey <= period.endDate)
+                    : null
                   const classes = [
                     'year-month__day',
                     (!inMonth || !inSchoolYear) && 'year-month__day--outside',
                     inMonth && (date.getDay() === 0 || date.getDay() === 6) && 'year-month__day--weekend',
                     dateKey === today && inMonth && 'year-month__day--today',
-                    dateKey === selectedDate && inMonth && 'year-month__day--selected',
+                    practicePeriod && `practice-hatch practice-hatch--${practicePeriod.id}`,
                   ].filter(Boolean).join(' ')
 
                   return (
@@ -136,7 +161,8 @@ function YearCalendar({ schoolYear, events, eventColorHues, today, selectedDate,
                       type="button"
                       key={dateKey}
                       disabled={!inMonth || !inSchoolYear}
-                      aria-label={`${formatFullDate(date)}${dayEvents.length ? `, ${dayEvents.length} wydarzeń` : ''}`}
+                      aria-label={`${formatFullDate(date)}${dayEvents.length ? `, ${dayEvents.length} wydarzeń` : ''}${practicePeriod ? `, praktyki zawodowe, klasy ${practicePeriod.classes.join(', ')}` : ''}`}
+                      title={practicePeriod ? `Praktyki zawodowe: ${practicePeriod.classes.join(', ')}` : undefined}
                       onClick={() => onDateSelect(date)}
                     >
                       {date.getDate()}
@@ -160,7 +186,41 @@ function YearCalendar({ schoolYear, events, eventColorHues, today, selectedDate,
               </span>
             </section>
           )
-        })}
+          })}
+        </div>
+
+        <section className="year-overview__legend card" aria-label="Legenda kalendarza">
+          <h3>Legenda</h3>
+          <div className="year-overview__legend-grid">
+          <div className="year-overview__legend-item">
+            <span className="year-overview__legend-swatch year-overview__legend-swatch--weekend" aria-hidden="true" />
+            <span>Sobota i niedziela</span>
+          </div>
+          <div className="year-overview__legend-item">
+            <span className="year-overview__legend-swatch year-overview__legend-swatch--today" aria-hidden="true" />
+            <span>Dzisiaj</span>
+          </div>
+          {categories.map((category) => (
+            <div className="year-overview__legend-item" key={category.id}>
+              <span
+                className="year-overview__legend-swatch year-overview__legend-swatch--event"
+                style={{ '--event-hue': getCategoryColorHue(category.name) }}
+                aria-hidden="true"
+              />
+              <span>{category.name}</span>
+            </div>
+          ))}
+          {practicePeriods.map((period) => (
+            <div className="year-overview__legend-item" key={period.id}>
+              <span
+                className={`year-overview__legend-swatch practice-hatch practice-hatch--${period.id}`}
+                aria-hidden="true"
+              />
+              <span>Praktyki zawodowe · {period.label}: {period.classes.join(', ')}</span>
+            </div>
+          ))}
+          </div>
+        </section>
       </div>
 
       <div className="year-overview__semesters">
