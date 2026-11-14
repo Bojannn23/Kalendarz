@@ -149,9 +149,11 @@ export async function saveEvents(events, { profile, schoolYear, categories, audi
   if (!events.length) return
 
   const client = requireSupabase()
+  const categoriesByName = new Map(categories.map((item) => [item.name, item]))
+  const audiencesByName = new Map(audiences.map((item) => [item.name, item]))
   const values = events.map((event) => {
-    const category = categories.find((item) => item.name === event.category)
-    const audience = audiences.find((item) => item.name === event.audience)
+    const category = categoriesByName.get(event.category)
+    const audience = audiencesByName.get(event.audience)
 
     if (!category || !audience) {
       throw new Error(`Nie można zapisać wydarzenia „${event.title}”: wybierz kategorię i odbiorców z listy.`)

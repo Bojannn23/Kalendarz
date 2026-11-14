@@ -1,9 +1,9 @@
-import { FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import {
   formatMonth,
   getMonthCalendarDays,
   toDateKey,
 } from '../../shared/lib/calendar.js'
+import MonthNavigation from './MonthNavigation.jsx'
 
 const weekdays = ['Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob', 'Niedz']
 
@@ -13,6 +13,7 @@ function CalendarGrid({
   events,
   eventColorHues,
   today,
+  monthTransitionDirection,
   onMonthChange,
   onDateSelect,
   onEventSelect,
@@ -22,32 +23,20 @@ function CalendarGrid({
   return (
     <section className="calendar-surface card" aria-label="Kalendarz miesięczny">
       <div className="month-toolbar d-flex align-items-center justify-content-between gap-2 p-2">
-        <div className="month-toolbar__navigation d-flex align-items-center gap-2">
-          <button
-            className="btn btn-outline-secondary icon-button"
-            type="button"
-            aria-label="Poprzedni miesiąc"
-            onClick={() => onMonthChange(-1)}
-          >
-            <FiChevronLeft />
-          </button>
-          <h2>{formatMonth(currentMonth)}</h2>
-          <button
-            className="btn btn-outline-secondary icon-button"
-            type="button"
-            aria-label="Następny miesiąc"
-            onClick={() => onMonthChange(1)}
-          >
-            <FiChevronRight />
-          </button>
-        </div>
+        <MonthNavigation
+          className="month-navigation--calendar"
+          currentMonth={currentMonth}
+          transitionDirection={monthTransitionDirection}
+          onMonthChange={onMonthChange}
+        />
         <button className="btn btn-outline-secondary today-button" type="button" onClick={() => onDateSelect(today)}>
           Dzisiaj
         </button>
       </div>
 
       <div
-        className="calendar-grid"
+        className={`calendar-grid${monthTransitionDirection ? ` month-transition__content--${monthTransitionDirection}` : ''}`}
+        key={`${currentMonth.getFullYear()}-${currentMonth.getMonth()}`}
         role="grid"
         aria-label={formatMonth(currentMonth)}
         style={{ '--calendar-week-count': days.length / 7 }}

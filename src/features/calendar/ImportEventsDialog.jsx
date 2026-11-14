@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { FiAlertCircle, FiUpload, FiX } from 'react-icons/fi'
+import { normalizeKey, parseBoolean } from './eventImportUtils.js'
 
 const fieldAliases = {
   title: ['title', 'name', 'nazwa', 'nazwawydarzenia', 'tytul', 'wydarzenie'],
@@ -13,14 +14,6 @@ const fieldAliases = {
   allDay: ['allday', 'calydzien', 'calodniowe'],
   location: ['location', 'miejsce', 'lokalizacja'],
   organizer: ['organizer', 'organizator'],
-}
-
-function normalizeKey(value) {
-  return String(value ?? '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLocaleLowerCase('pl-PL')
-    .replace(/[^a-z0-9]/g, '')
 }
 
 function normalizeRecord(record) {
@@ -74,10 +67,6 @@ function addDays(dateKey, days) {
   const date = new Date(`${dateKey}T12:00:00`)
   date.setDate(date.getDate() + days)
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-}
-
-function parseBoolean(value) {
-  return ['true', '1', 'tak', 'yes', 'y', 'caly dzien', 'calodniowe'].includes(normalizeKey(value))
 }
 
 function splitDelimitedLine(line, delimiter) {
@@ -151,6 +140,17 @@ async function readFileRecords(file) {
 }
 
 function prepareEvents(records, { categories, audiences, schoolYear, defaultCategory, defaultAudience }) {
+  const categoriesByName = new Map()
+  const audiencesByName = new Map()
+  categories.forEach((item) => {
+    const key = normalizeKey(item.name)
+    if (!categoriesByName.has(key)) categoriesByName.set(key, item)
+  })
+  audiences.forEach((item) => {
+    const key = normalizeKey(item.name)
+    if (!audiencesByName.has(key)) audiencesByName.set(key, item)
+  })
+
   return records.map((record, index) => {
     const source = normalizeRecord(record)
     const startDate = parseDate(source.startDate)
@@ -165,8 +165,8 @@ function prepareEvents(records, { categories, audiences, schoolYear, defaultCate
     }
     const categoryName = String(source.category || defaultCategory).trim()
     const audienceName = String(source.audience || defaultAudience).trim()
-    const category = categories.find((item) => normalizeKey(item.name) === normalizeKey(categoryName))
-    const audience = audiences.find((item) => normalizeKey(item.name) === normalizeKey(audienceName))
+    const category = categoriesByName.get(normalizeKey(categoryName))
+    const audience = audiencesByName.get(normalizeKey(audienceName))
     const allDayValue = String(source.allDay ?? '').trim()
     const allDay = allDayValue ? parseBoolean(allDayValue) : !startTime && !endTime
     const issues = []

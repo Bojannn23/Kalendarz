@@ -492,15 +492,6 @@ body {
   font-size: 12px;
 }
 
-.select-field--month {
-  flex: 0 0 140px;
-  padding: 0 0.55rem;
-}
-
-.select-field--month .form-control {
-  padding: 0;
-}
-
 .select-field--category {
   flex: 0 1 155px;
 }
@@ -1088,16 +1079,206 @@ body {
   min-height: 62px;
 }
 
-.month-toolbar__navigation {
+.month-navigation {
+  --month-navigation-current-size: 20px;
+  --month-navigation-side-size: 12px;
+  display: flex;
   min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
-.month-toolbar h2 {
+.month-navigation h2 {
   min-width: 145px;
+  flex: 0 0 145px;
   margin: 0;
+  line-height: 1.2;
   text-align: center;
   text-transform: capitalize;
   font-size: 20px;
+}
+
+.month-navigation__button {
+  min-height: 36px;
+  min-width: 0;
+  flex: 0 1 110px;
+  border: 0;
+  padding: 6px 4px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--month-navigation-side-size);
+  text-align: center;
+  text-transform: capitalize;
+  transition: color 160ms ease, filter 160ms ease, font-size 180ms ease;
+  white-space: nowrap;
+}
+
+.month-navigation__button:hover,
+.month-navigation__button:focus-visible {
+  color: var(--text);
+  filter: brightness(1.2);
+}
+
+.month-navigation__button:hover {
+  font-size: var(--month-navigation-current-size);
+}
+
+.month-navigation__label {
+  display: inline-block;
+}
+
+.month-navigation__current--previous {
+  animation: month-title-from-left 360ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.month-navigation__current--next {
+  animation: month-title-from-right 360ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.month-navigation--next .month-navigation__label--previous {
+  animation: month-current-to-left 360ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.month-navigation--next .month-navigation__label--next {
+  animation: month-label-from-right 360ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.month-navigation--previous .month-navigation__label--previous {
+  animation: month-label-from-left 360ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.month-navigation--previous .month-navigation__label--next {
+  animation: month-current-to-right 360ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.month-transition__content--previous {
+  animation: month-enter-from-left 360ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.month-transition__content--next {
+  animation: month-enter-from-right 360ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes month-title-from-left {
+  from {
+    opacity: 0.65;
+    transform: translateX(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes month-title-from-right {
+  from {
+    opacity: 0.65;
+    transform: translateX(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes month-current-to-left {
+  from {
+    opacity: 0.9;
+    font-size: var(--month-navigation-current-size);
+    transform: translateX(100%);
+  }
+
+  to {
+    opacity: 1;
+    font-size: var(--month-navigation-side-size);
+    transform: translateX(0);
+  }
+}
+
+@keyframes month-current-to-right {
+  from {
+    opacity: 0.9;
+    font-size: var(--month-navigation-current-size);
+    transform: translateX(-100%);
+  }
+
+  to {
+    opacity: 1;
+    font-size: var(--month-navigation-side-size);
+    transform: translateX(0);
+  }
+}
+
+@keyframes month-label-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-55%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes month-label-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(55%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes month-enter-without-slide {
+  from {
+    opacity: 0.65;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.month-navigation--calendar {
+  flex: 1;
+}
+
+.month-navigation--list {
+  --month-navigation-current-size: 17px;
+  flex: 1;
+}
+
+.month-navigation--list h2 {
+  font-size: 17px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .month-navigation__current--previous,
+  .month-navigation__current--next,
+  .month-navigation--next .month-navigation__label--previous,
+  .month-navigation--next .month-navigation__label--next,
+  .month-navigation--previous .month-navigation__label--previous,
+  .month-navigation--previous .month-navigation__label--next,
+  .month-transition__content--previous,
+  .month-transition__content--next {
+    animation-duration: 360ms !important;
+  }
+
+  .month-navigation__button {
+    transition: color 160ms ease, filter 160ms ease, font-size 200ms ease !important;
+  }
+
+  .month-navigation__button:hover,
+  .month-navigation__button:focus-visible {
+    filter: brightness(1.08);
+  }
 }
 
 .icon-button {
@@ -1468,13 +1649,9 @@ body {
 .list-section__heading {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: 12px;
   padding: 18px 3px 13px;
-}
-
-.list-section__heading h2 {
-  margin: 0;
-  text-transform: capitalize;
-  font-size: 17px;
 }
 
 .list-section__heading span {
@@ -2049,6 +2226,33 @@ a:focus-visible {
   .year-overview__legend-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+@media (max-width: 575.98px) {
+  .list-section__heading {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .month-navigation--list {
+    width: 100%;
+    gap: 4px;
+  }
+
+  .month-navigation--list h2 {
+    min-width: 0;
+    flex: 1 1 auto;
+    font-size: 15px;
+  }
+
+  .month-navigation--list {
+    --month-navigation-current-size: 15px;
+  }
+
+  .list-section__heading > span {
+    align-self: flex-end;
+  }
 
   .year-overview__semesters {
     grid-template-columns: 1fr;
@@ -2071,15 +2275,25 @@ a:focus-visible {
     padding: 6px 8px !important;
   }
 
-  .month-toolbar__navigation {
-    width: 100%;
-    justify-content: space-between;
-    gap: 4px !important;
+  .month-navigation--calendar {
+    gap: 4px;
   }
 
-  .month-toolbar h2 {
+  .month-navigation--calendar h2 {
     min-width: 0;
+    flex: 1;
     font-size: 18px;
+  }
+
+  .month-navigation--calendar {
+    --month-navigation-current-size: 18px;
+  }
+
+  .month-navigation__button {
+    flex: 0 1 110px;
+    padding: 4px 6px;
+    --month-navigation-side-size: 11px;
+    font-size: 11px;
   }
 
   .month-toolbar .icon-button {
@@ -2165,6 +2379,10 @@ a:focus-visible {
   .selected-day-panel > h2,
   .list-section__heading h2 {
     font-size: 16px;
+  }
+
+  .list-section__heading .month-navigation--list {
+    --month-navigation-current-size: 16px;
   }
 
   .selected-date-card {

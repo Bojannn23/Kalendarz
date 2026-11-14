@@ -13,7 +13,6 @@ import {
 import AppLayout from '../../shared/layouts/AppLayout.jsx'
 import {
   formatFullDate,
-  formatMonth,
   getEventColorHues,
   getSchoolYearLabel,
   getWarsawToday,
@@ -23,6 +22,7 @@ import CalendarGrid from './CalendarGrid.jsx'
 import DeleteEventDialog from './DeleteEventDialog.jsx'
 import EventForm, { CategoryBadge } from './EventForm.jsx'
 import EventsList from './EventsList.jsx'
+import MonthNavigation from './MonthNavigation.jsx'
 import AuthPanel from './AuthPanel.jsx'
 import ImportEventsDialog from './ImportEventsDialog.jsx'
 import YearCalendar from './YearCalendar.jsx'
@@ -63,6 +63,7 @@ function CalendarPage() {
     const [year, month] = getWarsawToday().split('-').map(Number)
     return new Date(year, month - 1, 1)
   })
+  const [monthTransitionDirection, setMonthTransitionDirection] = useState(null)
   const [categoryFilter, setCategoryFilter] = useState('')
   const [audienceFilter, setAudienceFilter] = useState('')
   const [search, setSearch] = useState('')
@@ -162,21 +163,26 @@ function CalendarPage() {
   }, [events, categoryFilter, audienceFilter, search])
   const eventColorHues = useMemo(() => getEventColorHues(events), [events])
 
+  const monthRange = useMemo(() => ({
+    first: toDateKey(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1)),
+    last: toDateKey(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0)),
+  }), [currentMonth])
   const monthEvents = useMemo(() => {
-    const firstOfMonth = toDateKey(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1))
-    const lastOfMonth = toDateKey(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0))
-    return visibleEvents.filter((event) => event.startDate <= lastOfMonth && event.endDate >= firstOfMonth)
-  }, [visibleEvents, currentMonth])
-  const allMonthEventCount = events.filter((event) => {
-    const firstOfMonth = toDateKey(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1))
-    const lastOfMonth = toDateKey(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0))
-    return event.startDate <= lastOfMonth && event.endDate >= firstOfMonth
-  }).length
-
-  const selectedEvents = visibleEvents.filter(
-    (event) => event.startDate <= selectedDate && event.endDate >= selectedDate,
+    return visibleEvents.filter((event) => event.startDate <= monthRange.last && event.endDate >= monthRange.first)
+  }, [visibleEvents, monthRange])
+  const allMonthEventCount = useMemo(
+    () => events.filter((event) => event.startDate <= monthRange.last && event.endDate >= monthRange.first).length,
+    [events, monthRange],
   )
-  const upcomingEvent = visibleEvents.find((event) => event.startDate > selectedDate)
+
+  const selectedEvents = useMemo(
+    () => visibleEvents.filter((event) => event.startDate <= selectedDate && event.endDate >= selectedDate),
+    [visibleEvents, selectedDate],
+  )
+  const upcomingEvent = useMemo(
+    () => visibleEvents.find((event) => event.startDate > selectedDate),
+    [visibleEvents, selectedDate],
+  )
   const canCreateEvents = profile?.role === 'admin' || profile?.role === 'teacher'
   const canImportEvents = profile?.role === 'admin'
   const canManageEvent = (event) => {
@@ -192,6 +198,7 @@ function CalendarPage() {
   }
 
   function changeMonth(amount) {
+    setMonthTransitionDirection(amount < 0 ? 'previous' : 'next')
     setCurrentMonth((month) => new Date(month.getFullYear(), month.getMonth() + amount, 1))
   }
 
@@ -199,7 +206,11 @@ function CalendarPage() {
     const key = typeof date === 'string' ? date : toDateKey(date)
     setSelectedDate(key)
     const [year, month] = key.split('-').map(Number)
-    setCurrentMonth(new Date(year, month - 1, 1))
+    const nextMonth = new Date(year, month - 1, 1)
+    if (nextMonth.getTime() !== currentMonth.getTime()) {
+      setMonthTransitionDirection(nextMonth < currentMonth ? 'previous' : 'next')
+    }
+    setCurrentMonth(nextMonth)
   }
 
   function startCreate() {
@@ -380,21 +391,6 @@ function CalendarPage() {
                   />
                 </label>
               )}
-              {page === 'events' && (
-                <label className="select-field select-field--month">
-                  <span className="sr-only">Miesiąc</span>
-                  <input
-                    className="form-control"
-                    type="month"
-                    value={`${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}`}
-                    onChange={(event) => {
-                      if (!event.target.value) return
-                      const [year, month] = event.target.value.split('-').map(Number)
-                      setCurrentMonth(new Date(year, month - 1, 1))
-                    }}
-                  />
-                </label>
-              )}
               <label className="select-field select-field--category">
                 <span className="sr-only">Filtr kategorii</span>
                 <select className="form-select" value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)}>
@@ -459,6 +455,7 @@ function CalendarPage() {
                   <div className="calendar-main col-12 col-xl-9">
                     <CalendarGrid
                       currentMonth={currentMonth}
+                      monthTransitionDirection={monthTransitionDirection}
                       selectedDate={selectedDate}
                       events={monthEvents}
                       eventColorHues={eventColorHues}
@@ -486,11 +483,21 @@ function CalendarPage() {
             ) : (
               <section className="list-section card">
                 <div className="list-section__heading">
-                  <h2>{formatMonth(currentMonth)}</h2>
+                  <MonthNavigation
+                    className="month-navigation--list"
+                    currentMonth={currentMonth}
+                    transitionDirection={monthTransitionDirection}
+                    onMonthChange={changeMonth}
+                  />
                   <span>{monthEvents.length} {pluralize(monthEvents.length, 'wydarzenie', 'wydarzenia', 'wydarzeń')}</span>
                 </div>
-                <EventsList events={monthEvents} categories={taxonomy.categories} eventColorHues={eventColorHues} canManageEvent={canManageEvent} onEdit={startEdit} onDelete={requestDelete} onSelect={selectEvent} />
-                <p className="list-footer">Wyświetlono {monthEvents.length} z {allMonthEventCount} wydarzeń · Od najwcześniejszego terminu</p>
+                <div
+                  className={monthTransitionDirection ? `month-transition__content--${monthTransitionDirection}` : ''}
+                  key={`${currentMonth.getFullYear()}-${currentMonth.getMonth()}`}
+                >
+                  <EventsList events={monthEvents} categories={taxonomy.categories} eventColorHues={eventColorHues} canManageEvent={canManageEvent} onEdit={startEdit} onDelete={requestDelete} onSelect={selectEvent} />
+                  <p className="list-footer">Wyświetlono {monthEvents.length} z {allMonthEventCount} wydarzeń · Od najwcześniejszego terminu</p>
+                </div>
               </section>
             )}
           </>

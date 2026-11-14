@@ -28,13 +28,13 @@ npm install
 npm run dev
 ```
 
-Polecenia `npm run build` i `npm run lint` służą odpowiednio do budowania i sprawdzania projektu.
+Polecenia `npm run build` i `npm run lint` służą odpowiednio do budowania i sprawdzania projektu. `npm test` uruchamia testy narzędziem wbudowanym w Node.js.
 
 ## Konfiguracja Supabase
 
 1. Zależności Supabase są instalowane razem z pozostałymi przez `npm install`.
 2. Skopiuj `.env.example` do `.env.local`. Wpisz adres projektu i klucz publishable z ustawień Supabase w zmiennych `VITE_SUPABASE_URL` oraz `VITE_SUPABASE_PUBLISHABLE_KEY`. `.env.local` jest ignorowany przez Git. Po zmianie zmiennych uruchom ponownie Vite.
-3. W Supabase otwórz **SQL Editor** i wykonaj migracje z katalogu `supabase/migrations` w kolejności nazw. Pierwsza tworzy tabele, polityki Row Level Security (RLS) i przykładowe wydarzenia. Druga zmienia rolę `viewer` na `teacher` i dodaje prywatne wydarzenia nauczycieli. Kolejne aktualizują nazwę szkoły i przywracają zalogowanym użytkownikom odczyt kategorii. W istniejącej bazie wykonaj migracje, których jeszcze nie zastosowano.
+3. W Supabase otwórz **SQL Editor** i wykonaj migracje z katalogu `supabase/migrations` w kolejności nazw. Pierwsza tworzy tabele, polityki Row Level Security (RLS) i przykładowe wydarzenia. Druga zmienia rolę `viewer` na `teacher` i dodaje prywatne wydarzenia nauczycieli. Kolejne aktualizują nazwę szkoły, przywracają zalogowanym użytkownikom odczyt kategorii oraz wymuszają, by daty wydarzeń mieściły się w przypisanym roku szkolnym. W istniejącej bazie wykonaj migracje, których jeszcze nie zastosowano.
 4. Utwórz konto przez **Authentication → Users**. Publiczna rejestracja nie jest wymagana.
 5. Przypisz konto do szkoły w SQL Editorze. Zastąp adres e-mail administratorem:
 
