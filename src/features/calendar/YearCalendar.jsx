@@ -103,7 +103,7 @@ function SemesterDates({ title, events, onDateSelect }) {
   )
 }
 
-function YearCalendar({ schoolYear, events, categories, eventColorHues, today, onDateSelect, onMonthSelect }) {
+function YearCalendar({ schoolYear, schoolName, events, categories, eventColorHues, today, onDateSelect, onMonthSelect }) {
   const months = getSchoolMonths(schoolYear)
   const practicePeriods = getPracticePeriods(schoolYear)
   const startDate = new Date(`${schoolYear.start_date}T12:00:00`)
@@ -112,6 +112,7 @@ function YearCalendar({ schoolYear, events, categories, eventColorHues, today, o
   const secondSemesterEvents = events.filter((event) => event.startDate > firstSemesterEnd)
 
   return (
+    <>
     <section className="year-overview" aria-label={`Roczny kalendarz szkolny ${schoolYear.label}`}>
       <div className="year-overview__main">
         <div className="year-overview__months">
@@ -239,6 +240,90 @@ function YearCalendar({ schoolYear, events, categories, eventColorHues, today, o
         Liczba dni pn–pt nie uwzględnia świąt ani przerw szkolnych. Granica półrocza (15 stycznia) pochodzi z kalendarza szkoły.
       </p>
     </section>
+
+    <section className="print-calendar" aria-label="Wersja do druku">
+      <div className="print-calendar__page">
+        <header className="print-calendar__header">
+          <div className="print-calendar__header-title">
+            <strong>{schoolName}</strong>
+            <span>Kalendarz roku szkolnego {schoolYear.label}</span>
+          </div>
+          <div className="print-calendar__year">{schoolYear.label}</div>
+        </header>
+        <div className="print-calendar__body">
+          <div className="print-calendar__months">
+            {months.map((month) => {
+              const monthStart = toDateKey(month)
+              const monthEnd = toDateKey(new Date(month.getFullYear(), month.getMonth() + 1, 0))
+              const monthEvents = events.filter((event) => event.startDate <= monthEnd && event.endDate >= monthStart)
+              const days = getMonthDays(month)
+
+              return (
+                <section className="print-calendar__month" key={monthStart}>
+                  <h3>{formatMonth(month)}</h3>
+                  <div className="print-calendar__grid">
+                    {weekdays.map((day, index) => (
+                      <span className="print-calendar__weekday" key={`${day}-${index}`}>{day}</span>
+                    ))}
+                    {days.map((date) => {
+                      const dateKey = toDateKey(date)
+                      const inMonth = date.getMonth() === month.getMonth()
+                      const inSchoolYear = dateKey >= schoolYear.start_date && dateKey <= schoolYear.end_date
+                      const dayEvents = inMonth && inSchoolYear
+                        ? monthEvents.filter((event) => event.startDate <= dateKey && event.endDate >= dateKey)
+                        : []
+                      const practicePeriod = inMonth && inSchoolYear
+                        ? practicePeriods.find((period) => dateKey >= period.startDate && dateKey <= period.endDate)
+                        : null
+
+                      return (
+                        <span
+                          className={[
+                            'print-calendar__day',
+                            (!inMonth || !inSchoolYear) && 'print-calendar__day--outside',
+                            inMonth && (date.getDay() === 0 || date.getDay() === 6) && 'print-calendar__day--weekend',
+                            practicePeriod && `practice-hatch practice-hatch--${practicePeriod.id}`,
+                          ].filter(Boolean).join(' ')}
+                          key={dateKey}
+                        >
+                          {inMonth ? date.getDate() : ''}
+                          {dayEvents.length > 0 && (
+                            <i
+                              className="print-calendar__marker"
+                              style={{ '--event-hue': dayEvents[0] ? eventColorHues.get(dayEvents[0].id) : undefined }}
+                            />
+                          )}
+                        </span>
+                      )
+                    })}
+                  </div>
+                </section>
+              )
+            })}
+          </div>
+          <aside className="print-calendar__legend">
+            <h3>Legenda</h3>
+            <div><span className="print-calendar__swatch print-calendar__swatch--weekend" /> Sobota i niedziela</div>
+            {categories.map((category) => (
+              <div key={category.id}>
+                <span
+                  className="print-calendar__swatch print-calendar__swatch--event"
+                  style={{ '--event-hue': getCategoryColorHue(category.name) }}
+                />
+                {category.name}
+              </div>
+            ))}
+            {practicePeriods.map((period) => (
+              <div key={period.id}>
+                <span className={`print-calendar__swatch practice-hatch practice-hatch--${period.id}`} />
+                Praktyki: {period.label}
+              </div>
+            ))}
+          </aside>
+        </div>
+      </div>
+    </section>
+    </>
   )
 }
 

@@ -6,6 +6,7 @@ import {
   FiList,
   FiMapPin,
   FiPlus,
+  FiPrinter,
   FiSearch,
   FiTrash2,
   FiUpload,
@@ -302,6 +303,14 @@ function CalendarPage() {
     setPage('calendar')
   }
 
+  function printCalendar() {
+    setPage('calendar')
+    setCalendarView('year')
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => window.print())
+    })
+  }
+
   if (authState === 'loading') {
     return <StatusPanel title="Ładowanie kalendarza" message="Pobieramy konto i wydarzenia z Supabase." busy />
   }
@@ -416,6 +425,11 @@ function CalendarPage() {
                   <FiList /> Lista
                 </button>
               </div>
+              {page === 'calendar' && (
+                <button className="btn btn-outline-secondary page-add-button" type="button" onClick={printCalendar}>
+                  <FiPrinter /> Drukuj
+                </button>
+              )}
               {canImportEvents && (
                 <button className="btn btn-outline-secondary page-add-button" type="button" onClick={() => setShowImport(true)}>
                     <FiUpload /> Importuj plik
@@ -434,6 +448,7 @@ function CalendarPage() {
                 <>
                   <YearCalendar
                     schoolYear={schoolYear}
+                    schoolName={profile.schoolName}
                     events={visibleEvents}
                     categories={taxonomy.categories}
                     eventColorHues={eventColorHues}
