@@ -1065,6 +1065,372 @@ body {
   font-size: 11px;
 }
 
+.print-calendar {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+
+  :root,
+  :root[data-theme='dark'] {
+    --text: #111;
+    --text-muted: #555;
+    --border: #333;
+    --surface: #fff;
+    --surface-muted: #eee;
+  }
+
+  body {
+    min-width: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #fff !important;
+    color: #111;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  html,
+  #root {
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .sidebar,
+  .topbar,
+  .mobile-bottom-nav,
+  .page-controls,
+  .year-overview,
+  .calendar-layout,
+  .calendar-footer,
+  .modal,
+  .toast {
+    display: none !important;
+  }
+
+  .app-content > .mobile-header {
+    display: none !important;
+  }
+
+  .app-shell,
+  .app-content,
+  .page-content,
+  .container-fluid {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .page-content > :not(.print-calendar) {
+    display: none !important;
+  }
+
+  .print-calendar {
+    position: fixed;
+    inset: 0 0 auto 0;
+    display: block;
+    width: 100%;
+    height: 194mm;
+    overflow: hidden;
+  }
+
+  .print-calendar__page {
+    width: 100%;
+    height: 194mm;
+    overflow: hidden;
+    break-after: avoid;
+    break-inside: avoid;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-calendar__header {
+    display: flex;
+    height: 15mm;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1.2mm solid #111;
+  }
+
+  .print-calendar__header-title {
+    display: flex;
+    align-items: center;
+    gap: 3mm;
+  }
+
+  .print-calendar__header-copy {
+    display: grid;
+    gap: 1mm;
+  }
+
+  .print-calendar__logo {
+    width: 12mm;
+    height: 12mm;
+    flex: 0 0 auto;
+    object-fit: contain;
+  }
+
+  .print-calendar__header strong {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 12pt;
+  }
+
+  .print-calendar__header span {
+    font-size: 8pt;
+  }
+
+  .print-calendar__year {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 15pt;
+    font-weight: 700;
+  }
+
+  .print-calendar__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 60mm;
+    gap: 2.5mm;
+    height: 175mm;
+    padding-top: 3mm;
+  }
+
+  .print-calendar__months {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    gap: 2mm;
+    min-width: 0;
+    height: 172mm;
+  }
+
+  .print-calendar__month {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    height: 56mm;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    border: 0.8mm solid #111;
+    padding: 0.7mm;
+  }
+
+  .print-calendar__month h3 {
+    margin: -0.7mm -0.7mm 0.7mm;
+    border-bottom: 0.3mm solid #111;
+    padding: 1.2mm 0.5mm;
+    background: #227769;
+    color: #fff;
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 0.3mm;
+    line-height: 1;
+    text-align: center;
+  }
+
+  .print-calendar__grid {
+    display: grid;
+    flex: 1;
+    min-height: 0;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-rows: 4mm repeat(6, minmax(0, 1fr));
+    border-top: 0.25mm solid #111;
+    border-left: 0.25mm solid #111;
+  }
+
+  .print-calendar__weekday,
+  .print-calendar__day {
+    display: grid;
+    min-width: 0;
+    min-height: 0;
+    place-items: center;
+    border-right: 0.25mm solid #111;
+    border-bottom: 0.25mm solid #111;
+  }
+
+  .print-calendar__grid > :nth-child(7n + 6) {
+    border-left: 0.3mm solid #555;
+  }
+
+  .print-calendar__grid > :nth-child(7n) {
+    border-right: 0.3mm solid #555;
+  }
+
+  .print-calendar__weekday {
+    background-color: #fff;
+    font-size: 6.5pt;
+    font-weight: 700;
+  }
+
+  .print-calendar__day--weekend {
+    background-color: #dedede;
+  }
+
+  .print-calendar__day--event {
+    background-color: hsl(var(--event-hue) 85% 72%);
+    font-weight: 700;
+  }
+
+  .print-calendar__day--holiday {
+    background-color: #ef3434;
+    color: #111;
+    font-weight: 700;
+  }
+
+  .print-calendar__day {
+    position: relative;
+    font-size: 7pt;
+  }
+
+  .print-calendar__day--outside {
+    color: transparent;
+  }
+
+  .print-calendar__month-count {
+    margin-top: 0.8mm;
+    font-size: 6pt;
+    font-weight: 600;
+    line-height: 1;
+    text-align: center;
+  }
+
+  .print-calendar__sidebar {
+    display: flex;
+    height: 172mm;
+    min-height: 0;
+    flex-direction: column;
+    gap: 2mm;
+    border: 0.8mm solid #111;
+    padding: 2mm;
+  }
+
+  .print-calendar__legend {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 1mm;
+    font-size: 5.5pt;
+  }
+
+  .print-calendar__legend h3,
+  .print-calendar__events h3 {
+    margin: 0 0 0.5mm;
+    border-bottom: 0.25mm solid #227769;
+    padding-bottom: 0.7mm;
+    color: #185f53;
+    font-size: 7pt;
+    font-weight: 700;
+  }
+
+  .print-calendar__legend-item {
+    display: flex;
+    align-items: center;
+    gap: 1mm;
+  }
+
+  .print-calendar__swatch {
+    width: 3mm;
+    height: 3mm;
+    flex: 0 0 auto;
+    border: 0.2mm solid #333;
+  }
+
+  .print-calendar__swatch--weekend {
+    background-color: #dedede;
+  }
+
+  .print-calendar__swatch--holiday {
+    background-color: #ef3434;
+  }
+
+  .print-calendar__swatch--event {
+    background-color: hsl(var(--event-hue) 85% 72%);
+  }
+
+  .print-calendar__events {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    font-size: 4.5pt;
+  }
+
+  .print-calendar__event-groups {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 1mm;
+    overflow: hidden;
+  }
+
+  .print-calendar__event-group {
+    min-width: 0;
+  }
+
+  .print-calendar__event-group-title {
+    display: flex;
+    align-items: center;
+    gap: 1mm;
+    margin: 0 0 0.4mm;
+    font-size: 5pt;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .print-calendar__events-list {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    gap: 0.25mm;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .print-calendar__events-list li {
+    display: grid;
+    grid-template-columns: 14mm minmax(0, 1fr);
+    gap: 0 0.8mm;
+    align-items: start;
+  }
+
+  .print-calendar__events-list time {
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .print-calendar__events-list li > div {
+    min-width: 0;
+  }
+
+  .print-calendar__events-list .print-calendar__event-time {
+    display: inline;
+    color: #555;
+    font-size: inherit;
+  }
+
+  .print-calendar__event-title {
+    display: block;
+    overflow: hidden;
+    line-height: 1.05;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+}
+
 .calendar-main {
   min-width: 0;
 }

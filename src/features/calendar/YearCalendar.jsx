@@ -5,6 +5,8 @@ import {
   formatShortDate,
   toDateKey,
 } from '../../shared/lib/calendar.js'
+import { getPolishStatutoryHolidays } from '../../shared/lib/polishHolidays.js'
+import logo from '../../assets/logo.png'
 
 const weekdays = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd']
 const weekdayLabels = ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota', 'Niedziela']
@@ -25,11 +27,12 @@ function getSchoolMonths(schoolYear) {
   return months
 }
 
-function getMonthDays(month) {
+function getMonthDays(month, minimumWeeks = 0) {
   const firstDay = new Date(month.getFullYear(), month.getMonth(), 1)
   const offset = (firstDay.getDay() + 6) % 7
   const dayCount = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate()
-  const cellCount = Math.ceil((offset + dayCount) / 7) * 7
+  const weekCount = Math.max(Math.ceil((offset + dayCount) / 7), minimumWeeks)
+  const cellCount = weekCount * 7
 
   return Array.from(
     { length: cellCount },
@@ -76,6 +79,21 @@ function getPracticePeriods(schoolYear) {
     .filter((period) => period.endDate >= schoolYear.start_date && period.startDate <= schoolYear.end_date)
 }
 
+function formatPrintDateRange(startDate, endDate) {
+  if (!endDate || endDate === startDate) return formatShortDate(startDate)
+
+  const [startYear, startMonth, startDay] = startDate.split('-')
+  const [endYear, endMonth, endDay] = endDate.split('-')
+
+  if (startYear !== endYear) {
+    return `${startDay}.${startMonth}.${startYear.slice(-2)}–${endDay}.${endMonth}.${endYear.slice(-2)}`
+  }
+  if (startMonth !== endMonth) {
+    return `${startDay}.${startMonth}–${endDay}.${endMonth}.${endYear}`
+  }
+  return `${startDay}–${endDay}.${endMonth}.${endYear}`
+}
+
 function SemesterDates({ title, events, onDateSelect }) {
   return (
     <section className="year-semester card">
@@ -103,15 +121,64 @@ function SemesterDates({ title, events, onDateSelect }) {
   )
 }
 
-function YearCalendar({ schoolYear, events, categories, eventColorHues, today, onDateSelect, onMonthSelect }) {
+function YearCalendar({ schoolYear, schoolName, events, categories, eventColorHues, today, onDateSelect, onMonthSelect }) {
   const months = getSchoolMonths(schoolYear)
   const practicePeriods = getPracticePeriods(schoolYear)
+  const statutoryHolidays = getPolishStatutoryHolidays(schoolYear.start_date, schoolYear.end_date)
+  const statutoryHolidayDates = new Set(statutoryHolidays.map((holiday) => holiday.dateKey))
+  const printedCategoryNames = new Set(['Organizacja', 'Uroczystości', 'Spotkania'])
+  const printedCategories = categories.filter((category) => printedCategoryNames.has(category.name))
+  const printedEvents = events.filter((event) => printedCategoryNames.has(event.category))
+  const printableDates = [
+    ...statutoryHolidays.map((holiday) => ({
+      ...holiday,
+      endDate: holiday.dateKey,
+      type: 'holiday',
+    })),
+    ...practicePeriods.map((period) => ({
+      id: `practice-${period.id}`,
+      hatchId: period.id,
+      startDate: period.startDate,
+      endDate: period.endDate,
+      title: `Praktyki zawodowe · ${period.label}`,
+      classes: period.classes,
+      type: 'practice',
+    })),
+    ...printedEvents.map((event) => ({ ...event, type: 'event' })),
+  ].sort((a, b) => {
+    const firstDate = a.startDate || a.dateKey
+    const secondDate = b.startDate || b.dateKey
+    return firstDate.localeCompare(secondDate)
+      || (a.startTime || '').localeCompare(b.startTime || '')
+  })
+  const printableGroups = [
+    {
+      id: 'holidays',
+      title: 'Dni ustawowo wolne',
+      swatchClass: 'print-calendar__swatch print-calendar__swatch--holiday',
+      items: printableDates.filter((item) => item.type === 'holiday'),
+    },
+    ...printedCategories.map((category) => ({
+      id: `category-${category.id}`,
+      title: category.name,
+      swatchClass: 'print-calendar__swatch print-calendar__swatch--event',
+      hue: getCategoryColorHue(category.name),
+      items: printableDates.filter((item) => item.type === 'event' && item.category === category.name),
+    })),
+    ...practicePeriods.map((period) => ({
+      id: `practice-${period.id}`,
+      title: `Praktyki zawodowe · ${period.label}`,
+      swatchClass: `print-calendar__swatch practice-hatch practice-hatch--${period.id}`,
+      items: printableDates.filter((item) => item.type === 'practice' && item.hatchId === period.id),
+    })),
+  ].filter((group) => group.items.length > 0)
   const startDate = new Date(`${schoolYear.start_date}T12:00:00`)
   const firstSemesterEnd = toDateKey(new Date(startDate.getFullYear() + 1, 0, 15))
   const firstSemesterEvents = events.filter((event) => event.startDate <= firstSemesterEnd)
   const secondSemesterEvents = events.filter((event) => event.startDate > firstSemesterEnd)
 
   return (
+    <>
     <section className="year-overview" aria-label={`Roczny kalendarz szkolny ${schoolYear.label}`}>
       <div className="year-overview__main">
         <div className="year-overview__months">
@@ -239,6 +306,130 @@ function YearCalendar({ schoolYear, events, categories, eventColorHues, today, o
         Liczba dni pn–pt nie uwzględnia świąt ani przerw szkolnych. Granica półrocza (15 stycznia) pochodzi z kalendarza szkoły.
       </p>
     </section>
+
+    <section className="print-calendar" aria-label="Wersja do druku">
+      <div className="print-calendar__page">
+        <header className="print-calendar__header">
+          <div className="print-calendar__header-title">
+            <img className="print-calendar__logo" src={logo} alt="" />
+            <div className="print-calendar__header-copy">
+              <strong>{schoolName}</strong>
+              <span>Kalendarz roku szkolnego {schoolYear.label}</span>
+            </div>
+          </div>
+          <div className="print-calendar__year">{schoolYear.label}</div>
+        </header>
+        <div className="print-calendar__body">
+          <div className="print-calendar__months">
+            {months.map((month) => {
+              const monthStart = toDateKey(month)
+              const monthEnd = toDateKey(new Date(month.getFullYear(), month.getMonth() + 1, 0))
+              const monthEvents = printedEvents.filter((event) => event.startDate <= monthEnd && event.endDate >= monthStart)
+              const days = getMonthDays(month, 6)
+
+              return (
+                <section className="print-calendar__month" key={monthStart}>
+                  <h3>{formatMonth(month)}</h3>
+                  <div className="print-calendar__grid">
+                    {weekdays.map((day, index) => (
+                      <span
+                        className="print-calendar__weekday"
+                        key={`${day}-${index}`}
+                      >
+                        {day}
+                      </span>
+                    ))}
+                    {days.map((date) => {
+                      const dateKey = toDateKey(date)
+                      const inMonth = date.getMonth() === month.getMonth()
+                      const inSchoolYear = dateKey >= schoolYear.start_date && dateKey <= schoolYear.end_date
+                      const dayEvents = inMonth && inSchoolYear
+                        ? monthEvents.filter((event) => event.startDate <= dateKey && event.endDate >= dateKey)
+                        : []
+                      const isWeekend = date.getDay() === 0 || date.getDay() === 6
+                      const isStatutoryHoliday = statutoryHolidayDates.has(dateKey)
+                      const practicePeriod = inMonth && inSchoolYear && !isWeekend && !isStatutoryHoliday
+                        ? practicePeriods.find((period) => dateKey >= period.startDate && dateKey <= period.endDate)
+                        : null
+
+                      return (
+                        <span
+                          className={[
+                            'print-calendar__day',
+                            (!inMonth || !inSchoolYear) && 'print-calendar__day--outside',
+                            isWeekend && 'print-calendar__day--weekend',
+                            dayEvents.length > 0 && 'print-calendar__day--event',
+                            isStatutoryHoliday && 'print-calendar__day--holiday',
+                            practicePeriod && `practice-hatch practice-hatch--${practicePeriod.id}`,
+                          ].filter(Boolean).join(' ')}
+                          style={dayEvents.length > 0 ? {
+                            '--event-hue': eventColorHues.get(dayEvents[0].id),
+                          } : undefined}
+                          key={dateKey}
+                        >
+                          {inMonth ? date.getDate() : ''}
+                        </span>
+                      )
+                    })}
+                  </div>
+                  <span className="print-calendar__month-count">
+                    {getWeekdayCount(month, schoolYear)} dni pn–pt
+                  </span>
+                </section>
+              )
+            })}
+          </div>
+          <aside className="print-calendar__sidebar">
+            <section className="print-calendar__legend">
+              <h3>Legenda</h3>
+              <div className="print-calendar__legend-item">
+                <span className="print-calendar__swatch print-calendar__swatch--weekend" />
+                Sobota i niedziela
+              </div>
+            </section>
+            <section className="print-calendar__events">
+              <h3>Daty i wydarzenia</h3>
+              <div className="print-calendar__event-groups">
+                {printableGroups.map((group) => (
+                  <section className="print-calendar__event-group" key={group.id}>
+                    <h4 className="print-calendar__event-group-title">
+                      <span
+                        className={group.swatchClass}
+                        style={group.hue === undefined ? undefined : { '--event-hue': group.hue }}
+                      />
+                      {group.title}
+                    </h4>
+                    <ul className="print-calendar__events-list">
+                      {group.items.map((item) => {
+                    const startDate = item.startDate || item.dateKey
+                    const dateLabel = formatPrintDateRange(startDate, item.endDate)
+                    const itemTitle = item.type === 'practice'
+                      ? `Klasy: ${item.classes.join(', ')}`
+                      : item.title
+                    const eventTime = item.type === 'event' && !item.allDay ? item.startTime : ''
+
+                    return (
+                      <li key={`${item.type}-${item.id || item.dateKey}`}>
+                        <time>{dateLabel}</time>
+                        <div>
+                          <span className="print-calendar__event-title">
+                            — {itemTitle}
+                            {eventTime && <small className="print-calendar__event-time"> · {eventTime}</small>}
+                          </span>
+                        </div>
+                      </li>
+                    )
+                      })}
+                    </ul>
+                  </section>
+                ))}
+              </div>
+            </section>
+          </aside>
+        </div>
+      </div>
+    </section>
+    </>
   )
 }
 
