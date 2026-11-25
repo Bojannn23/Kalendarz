@@ -1107,7 +1107,6 @@ body {
 
   .sidebar,
   .topbar,
-  .mobile-header,
   .mobile-bottom-nav,
   .page-controls,
   .year-overview,
@@ -1115,6 +1114,10 @@ body {
   .calendar-footer,
   .modal,
   .toast {
+    display: none !important;
+  }
+
+  .app-content > .mobile-header {
     display: none !important;
   }
 
@@ -1163,8 +1166,21 @@ body {
   }
 
   .print-calendar__header-title {
+    display: flex;
+    align-items: center;
+    gap: 3mm;
+  }
+
+  .print-calendar__header-copy {
     display: grid;
     gap: 1mm;
+  }
+
+  .print-calendar__logo {
+    width: 12mm;
+    height: 12mm;
+    flex: 0 0 auto;
+    object-fit: contain;
   }
 
   .print-calendar__header strong {
@@ -1184,7 +1200,7 @@ body {
 
   .print-calendar__body {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 42mm;
+    grid-template-columns: minmax(0, 1fr) 60mm;
     gap: 2.5mm;
     height: 175mm;
     padding-top: 3mm;
@@ -1200,28 +1216,37 @@ body {
   }
 
   .print-calendar__month {
+    display: flex;
+    flex-direction: column;
     min-width: 0;
     height: 56mm;
     break-inside: avoid;
     page-break-inside: avoid;
-    border: 0.35mm solid #333;
-    padding: 1.5mm;
+    border: 0.8mm solid #111;
+    padding: 0.7mm;
   }
 
   .print-calendar__month h3 {
-    margin: 0 0 1mm;
-    border-bottom: 0.4mm solid #333;
-    padding-bottom: 0.5mm;
+    margin: -0.7mm -0.7mm 0.7mm;
+    border-bottom: 0.3mm solid #111;
+    padding: 1.2mm 0.5mm;
+    background: #227769;
+    color: #fff;
     font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 0.3mm;
+    line-height: 1;
     text-align: center;
-    text-transform: capitalize;
   }
 
   .print-calendar__grid {
     display: grid;
-    height: 46mm;
+    flex: 1;
+    min-height: 0;
     grid-template-columns: repeat(7, minmax(0, 1fr));
     grid-template-rows: 4mm repeat(6, minmax(0, 1fr));
+    border-top: 0.25mm solid #111;
+    border-left: 0.25mm solid #111;
   }
 
   .print-calendar__weekday,
@@ -1230,76 +1255,180 @@ body {
     min-width: 0;
     min-height: 0;
     place-items: center;
-    border-right: 0.15mm solid #777;
-    border-bottom: 0.15mm solid #777;
+    border-right: 0.25mm solid #111;
+    border-bottom: 0.25mm solid #111;
+  }
+
+  .print-calendar__grid > :nth-child(7n + 6) {
+    border-left: 0.3mm solid #555;
+  }
+
+  .print-calendar__grid > :nth-child(7n) {
+    border-right: 0.3mm solid #555;
   }
 
   .print-calendar__weekday {
-    font-size: 5.5pt;
+    background-color: #fff;
+    font-size: 6.5pt;
+    font-weight: 700;
+  }
+
+  .print-calendar__day--weekend {
+    background-color: #dedede;
+  }
+
+  .print-calendar__day--event {
+    background-color: hsl(var(--event-hue) 85% 72%);
+    font-weight: 700;
+  }
+
+  .print-calendar__day--holiday {
+    background-color: #ef3434;
+    color: #111;
     font-weight: 700;
   }
 
   .print-calendar__day {
     position: relative;
-    font-size: 6pt;
+    font-size: 7pt;
   }
 
   .print-calendar__day--outside {
-    visibility: hidden;
+    color: transparent;
   }
 
-  .print-calendar__day--weekend {
-    background: #e6e6e6;
+  .print-calendar__month-count {
+    margin-top: 0.8mm;
+    font-size: 6pt;
+    font-weight: 600;
+    line-height: 1;
+    text-align: center;
   }
 
-  .print-calendar__marker {
-    position: absolute;
-    right: 0.8mm;
-    bottom: 0.8mm;
-    width: 1.5mm;
-    height: 1.5mm;
-    border: 0.2mm solid #111;
-    border-radius: 50%;
-    background: hsl(var(--event-hue) 62% 36%);
+  .print-calendar__sidebar {
+    display: flex;
+    height: 172mm;
+    min-height: 0;
+    flex-direction: column;
+    gap: 2mm;
+    border: 0.8mm solid #111;
+    padding: 2mm;
   }
 
   .print-calendar__legend {
     display: flex;
+    flex: 0 0 auto;
     flex-direction: column;
-    gap: 2mm;
-    border: 0.35mm solid #333;
-    padding: 3mm;
-    font-size: 6.5pt;
+    gap: 1mm;
+    font-size: 5.5pt;
   }
 
-  .print-calendar__legend h3 {
-    margin: 0 0 1mm;
-    border-bottom: 0.35mm solid #333;
-    padding-bottom: 1mm;
-    font-size: 9pt;
+  .print-calendar__legend h3,
+  .print-calendar__events h3 {
+    margin: 0 0 0.5mm;
+    border-bottom: 0.25mm solid #227769;
+    padding-bottom: 0.7mm;
+    color: #185f53;
+    font-size: 7pt;
+    font-weight: 700;
   }
 
-  .print-calendar__legend div {
+  .print-calendar__legend-item {
     display: flex;
     align-items: center;
     gap: 1mm;
   }
 
   .print-calendar__swatch {
-    width: 4mm;
-    height: 4mm;
+    width: 3mm;
+    height: 3mm;
     flex: 0 0 auto;
     border: 0.2mm solid #333;
   }
 
   .print-calendar__swatch--weekend {
-    background: #e6e6e6;
+    background-color: #dedede;
+  }
+
+  .print-calendar__swatch--holiday {
+    background-color: #ef3434;
   }
 
   .print-calendar__swatch--event {
-    border-radius: 50%;
-    background: hsl(var(--event-hue) 62% 36%);
+    background-color: hsl(var(--event-hue) 85% 72%);
   }
+
+  .print-calendar__events {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    font-size: 4.5pt;
+  }
+
+  .print-calendar__event-groups {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 1mm;
+    overflow: hidden;
+  }
+
+  .print-calendar__event-group {
+    min-width: 0;
+  }
+
+  .print-calendar__event-group-title {
+    display: flex;
+    align-items: center;
+    gap: 1mm;
+    margin: 0 0 0.4mm;
+    font-size: 5pt;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .print-calendar__events-list {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    gap: 0.25mm;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .print-calendar__events-list li {
+    display: grid;
+    grid-template-columns: 14mm minmax(0, 1fr);
+    gap: 0 0.8mm;
+    align-items: start;
+  }
+
+  .print-calendar__events-list time {
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .print-calendar__events-list li > div {
+    min-width: 0;
+  }
+
+  .print-calendar__events-list .print-calendar__event-time {
+    display: inline;
+    color: #555;
+    font-size: inherit;
+  }
+
+  .print-calendar__event-title {
+    display: block;
+    overflow: hidden;
+    line-height: 1.05;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
 }
 
 .calendar-main {
