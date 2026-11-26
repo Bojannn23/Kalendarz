@@ -186,7 +186,7 @@ function YearCalendar({ schoolYear, schoolName, events, categories, eventColorHu
           const monthStart = toDateKey(month)
           const monthEnd = toDateKey(new Date(month.getFullYear(), month.getMonth() + 1, 0))
           const monthEvents = events.filter((event) => event.startDate <= monthEnd && event.endDate >= monthStart)
-          const days = getMonthDays(month)
+          const days = getMonthDays(month, 6)
 
           return (
             <section className="year-month card" key={monthStart}>

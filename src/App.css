@@ -11,6 +11,8 @@
   --success-text: #fff;
   --success-bg: #17653a;
   --success-border: #17653a;
+  --year-day-bg: #f4f6f8;
+  --year-weekend-bg: #e9eef1;
   --bs-body-bg: var(--app-bg);
   --bs-body-color: var(--text);
   --bs-primary: var(--primary);
@@ -39,6 +41,8 @@
   --success-text: #fff;
   --success-bg: #276b43;
   --success-border: #3b8c5c;
+  --year-day-bg: #263436;
+  --year-weekend-bg: #303f41;
   --bs-body-bg: var(--app-bg);
   --bs-body-color: var(--text);
   --bs-primary: var(--primary);
@@ -830,7 +834,7 @@ body {
 .year-month__title {
   border: 0;
   padding: 0;
-  background: transparent;
+  background: var(--year-day-bg);
   color: var(--text);
   cursor: pointer;
   font-size: 15px;
@@ -879,7 +883,7 @@ body {
 }
 
 .year-month__day--weekend {
-  background: var(--surface-muted);
+  background: var(--year-weekend-bg);
 }
 
 .year-month__day--outside {
